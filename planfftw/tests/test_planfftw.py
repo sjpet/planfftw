@@ -741,3 +741,33 @@ class TestIRFFTN:
         my_x = my_irfftn(self.x3_fft)
         assert_array_almost_equal(my_rfftn(my_x),
                                   self.x3_fft)
+
+
+class TestFirFilter:
+    b = np.array([0, 1, -2])
+    x = np.array([1.2, 0.4, -0.1, 1.2, 1.1, 0.9, -0.7, -0.3, 0.1, -0.2, 0.3])
+
+    xfb = np.array([0., 1.2, -2., -0.9, 1.4, -1.3, -1.3, -2.5, 1.1, 0.7, -0.4])
+
+    def test_simple_firfilter(self):
+        my_firfilter = firfilter(self.b, self.x)
+        assert_array_almost_equal(my_firfilter(self.b, self.x), self.xfb)
+
+
+class TestCorrelate:
+    x = np.array([1.2, 0.3, -0.2, 0.7, 0.3, 0.1, 0.1])
+    y = np.array([1.1, 0.7, 0.1, -0.2, -0.6])
+
+    rxy = np.array([-0.72, -0.42, 0.18, 0.49, 1.19, 0.14, 0.22, 0.97, 0.41,
+                    0.18, 0.11])
+
+    def test_simple_correlate(self):
+        my_correlate_1 = correlate(self.x, self.y)
+        my_correlate_2 = correlate(self.x, self.y, 'same')
+        my_correlate_3 = correlate(self.x, self.y, 'valid')
+        assert_array_almost_equal(my_correlate_1(self.x, self.y),
+                                  self.rxy)
+        assert_array_almost_equal(my_correlate_2(self.x, self.y),
+                                  self.rxy[2:9])
+        assert_array_almost_equal(my_correlate_3(self.x, self.y),
+                                  self.rxy[4:7])
