@@ -63,10 +63,10 @@ def fft(a, nfft=None, axis=-1, fft_pair=False, crop_ifft=False):
     # Set up input and output arrays and FFT object
     u = pyfftw.n_byte_align_empty(shape, 16, dtype)
     v = pyfftw.n_byte_align_empty(shape, 16, dtype)
-    fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD')
+    fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD', axes=(axis,))
 
     # Define fft function
-    if n == nfft or not crop_ifft:
+    if n == nfft:
         def planned_fft(x):
             u[:] = x
             return fft_obj().copy()
@@ -85,7 +85,7 @@ def fft(a, nfft=None, axis=-1, fft_pair=False, crop_ifft=False):
 
     # Define ifft function
     if fft_pair is True:
-        ifft_obj = pyfftw.FFTW(v, u, direction='FFTW_BACKWARD')
+        ifft_obj = pyfftw.FFTW(v, u, direction='FFTW_BACKWARD', axes=(axis,))
 
         if n > nfft:
             raise ValueError("NFFT must be at least equal to signal length "
@@ -498,7 +498,7 @@ def ifft(a, nfft=None, axis=-1, fft_pair=False):
     # Set up input and output arrays and FFT object
     u = pyfftw.n_byte_align_empty(shape, 16, dtype)
     v = pyfftw.n_byte_align_empty(shape, 16, dtype)
-    ifft_obj = pyfftw.FFTW(v, u, direction='FFTW_BACKWARD')
+    ifft_obj = pyfftw.FFTW(v, u, direction='FFTW_BACKWARD', axes=(axis,))
 
     # Define fft function
     if n == nfft:
@@ -520,7 +520,7 @@ def ifft(a, nfft=None, axis=-1, fft_pair=False):
 
     # Define fft function
     if fft_pair is True:
-        fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD')
+        fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD', axes=(axis,))
 
         if n == nfft:
             def planned_fft(x):
@@ -569,19 +569,21 @@ def irfft(a, nfft=None, axis=-1, fft_pair=False):
     """
     # Get shape
     shape = _utils.get_shape(a)
-    n = shape[axis]
+    n = 2*(shape[axis] - 1)
 
     # Set up slices and pyfftw shapes
     n_dim = len(shape)
     slices = [slice(None)] * n_dim
 
     if nfft is None:
-        nfft = 2*(shape[axis]-1)
+        nfft = n
 
-    shape = list(shape)
-    out_shape = list(shape)
-    shape[axis] = nfft
-    out_shape[axis] = nfft//2 + 1
+    nfft_complex = nfft//2 + 1
+
+    u_shape = list(shape)
+    v_shape = list(shape)
+    u_shape[axis] = nfft
+    v_shape[axis] = nfft_complex
 
     # Set data types
     if np.asarray(a).dtype.name in ('float32', 'int32', 'complex64'):
@@ -591,9 +593,11 @@ def irfft(a, nfft=None, axis=-1, fft_pair=False):
         dtype = 'float64'
         fft_dtype = 'complex128'
 
-    u = pyfftw.n_byte_align_empty(out_shape, 16, dtype)
-    v = pyfftw.n_byte_align_empty(shape, 16, fft_dtype)
-    ifft_obj = pyfftw.FFTW(v, u, direction='FFTW_BACKWARD')
+    # print(out_shape)
+    # print(shape)
+    u = pyfftw.n_byte_align_empty(u_shape, 16, dtype)
+    v = pyfftw.n_byte_align_empty(v_shape, 16, fft_dtype)
+    ifft_obj = pyfftw.FFTW(v, u, direction='FFTW_BACKWARD', axes=(axis,))
 
     # Define fft function
     if n == nfft:
@@ -603,11 +607,11 @@ def irfft(a, nfft=None, axis=-1, fft_pair=False):
 
     elif n < nfft:
         def planned_irfft(x):
-            v[:] = _utils.pad_array(x, shape)
+            v[:] = _utils.pad_array(x, v_shape)
             return ifft_obj().copy()
 
     else:
-        slices[axis] = slice(0, nfft)
+        slices[axis] = slice(0, nfft_complex)
 
         def planned_irfft(x):
             v[:] = x[slices]
@@ -615,7 +619,7 @@ def irfft(a, nfft=None, axis=-1, fft_pair=False):
 
     # Define ifft function
     if fft_pair is True:
-        fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD')
+        fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD', axes=(axis,))
 
         if n == nfft:
             def planned_rfft(x):
@@ -775,13 +779,18 @@ def irfftn(a, shape=None, axes=None, fft_pair=False):
     a_shape = _utils.get_shape(a)
     n_dim = len(a_shape)
 
+    print(shape)
+    print(axes)
+    print(a_shape)
     if shape is None:
         if axes is None:
             shape = [n for n in a_shape]
+            shape[-1] = 2*(shape[-1] - 1)
         else:
             shape = [a_shape[axis] for axis in axes]
-
-        shape[axes[-1]] = 2*(shape[axes[-1]] - 1)
+            shape[axes[-1]] = 2*(shape[axes[-1]] - 1)
+    else:
+        shape = list(shape)
 
     if axes is None:
         n_dim_s = len(shape)
@@ -807,7 +816,7 @@ def irfftn(a, shape=None, axes=None, fft_pair=False):
     # Set up slices
     slices = [slice(None)] * n_dim
     for axis in axes:
-        slices[axis] = slice(0, u_shape[axis])
+        slices[axis] = slice(0, v_shape[axis])
 
     # Set data types
     if np.asarray(a).dtype.name in ('float32', 'int32', 'complex64'):
