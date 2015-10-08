@@ -58,3 +58,7 @@ target/
 
 # PyCharm
 .idea
+
+# Experimental testing
+tox.ini
+.tox
