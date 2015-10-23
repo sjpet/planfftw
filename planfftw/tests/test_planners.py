@@ -92,8 +92,7 @@ class TestConvolve:
     cxy = np.array([ 1.32, 1.17, 0.11, 0.42, 0.02, 0.25, 0.19, -0.4, -0.19,
                      -0.08, -0.06])
 
-
-    def test_simple_convolve(self):
+    def test_convolve_1d(self):
         my_convolve_1 = convolve(self.x, self.y)
         my_convolve_2 = convolve(self.x, self.y, 'same')
         my_convolve_3 = convolve(self.x, self.y, 'valid')
@@ -103,3 +102,33 @@ class TestConvolve:
                                   self.cxy[2:9])
         assert_array_almost_equal(my_convolve_3(self.x, self.y),
                                   self.cxy[4:7])
+
+    def test_convolve_1d_x_constant(self):
+        my_convolve_1 = convolve(self.x, self.y, constant_x=True)
+        my_convolve_2 = convolve(self.x, self.y, 'same', constant_x=True)
+        my_convolve_3 = convolve(self.x, self.y, 'valid', constant_x=True)
+        assert_array_almost_equal(my_convolve_1(self.y),
+                                  self.cxy)
+        assert_array_almost_equal(my_convolve_2(self.y),
+                                  self.cxy[2:9])
+        assert_array_almost_equal(my_convolve_3(self.y),
+                                  self.cxy[4:7])
+
+    def test_convolve_1d_y_constant(self):
+        my_convolve_1 = convolve(self.x, self.y, constant_y=True)
+        my_convolve_2 = convolve(self.x, self.y, 'same', constant_y=True)
+        my_convolve_3 = convolve(self.x, self.y, 'valid', constant_y=True)
+        assert_array_almost_equal(my_convolve_1(self.x),
+                                  self.cxy)
+        assert_array_almost_equal(my_convolve_2(self.x),
+                                  self.cxy[2:9])
+        assert_array_almost_equal(my_convolve_3(self.x),
+                                  self.cxy[4:7])
+
+    # single axes in two N-D arrays
+    # multiple axes in N-D arrays
+    # single axis in N-D with 1-D
+    # 1-D with single axis in N-D
+    # 1-D segments with 1-D sequence
+    # N-D segments with N-D sequence
+    # single axis in N-D segments with 1-D sequence

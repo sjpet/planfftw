@@ -356,6 +356,14 @@ class TestIFFT:
         my_x = my_ifft(self.x_fft)
         assert_array_almost_equal(my_fft(my_x), self.x_fft)
 
+    def test_ifft_pair_cropped(self):
+        my_ifft, my_fft = ifft(self.x_fft,
+                               nfft=32,
+                               fft_pair=True,
+                               crop_fft=True)
+        my_x = my_ifft(self.x_fft)
+        assert_array_almost_equal(my_fft(my_x), self.x_fft)
+
 
 class TestIRFFT:
     x_fft = np.array([-0.65715380+0.j, -4.08505860-5.99199174j,
@@ -601,6 +609,15 @@ class TestIFFTN:
     def test_ifftn_pair(self):
         my_ifftn, my_fftn = ifftn(self.x3_fft,
                                   fft_pair=True)
+        my_x = my_ifftn(self.x3_fft)
+        assert_array_almost_equal(my_fftn(my_x),
+                                  self.x3_fft)
+
+    def test_ifftn_pair_cropped(self):
+        my_ifftn, my_fftn = ifftn(self.x3_fft,
+                                  shape=(8, 4, 32),
+                                  fft_pair=True,
+                                  crop_fft=True)
         my_x = my_ifftn(self.x3_fft)
         assert_array_almost_equal(my_fftn(my_x),
                                   self.x3_fft)

@@ -716,23 +716,16 @@ def firfilter(plan_b,
     # ### Make pyfftw plans
     # define shapes
     u_shape = list(x_shape)
-    # ### v_shape = list(x_shape)
     y_shape = list(x_shape)
     u_shape[axis] = nfft
-    # ### v_shape[axis] = nfft_complex
 
     # Reduce by one dimension if plan_x contains segments
     if x_segmented:
         u_shape.pop(segments_axis)
-        # ### v_shape.pop(segments_axis)
         y_shape.pop(segments_axis)
         axis = _utils.get_segment_axis(x_shape, axis, segments_axis)
 
     # Create the arrays and objects
-    # ### u = pyfftw.n_byte_align_empty(u_shape, 16, 'float64')
-    # ### v = pyfftw.n_byte_align_empty(v_shape, 16, 'complex128')
-    # ### fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD', axes=(axis,))
-    # ### ifft_obj = pyfftw.FFTW(v, u, direction='FFTW_BACKWARD', axes=(axis,))
 
     planned_rfft, planned_irfft = rfft(tuple(u_shape),
                                        nfft,
@@ -866,22 +859,16 @@ def firfilter(plan_b,
             """
             # nfft-point FFT of filter once
             b_padded = np.hstack((b, np.zeros(nfft - n_filter)))
-            # ### u[:] = (b_padded*filter_expander).transpose(t)
-            # ### b_fft = fft_obj().copy()
             b_fft = planned_rfft((b_padded*filter_expander).transpose(t))
 
             y = np.zeros(y_shape)
             for k in range(0, n_signal, l):
                 k_to = np.min((k + l, n_signal))
                 slices[axis] = slice(k, k_to)
-                # ### u[:] = _utils.pad_array(x[slices], u_shape)
-                # ### x_fft = fft_obj().copy()
                 x_fft = planned_rfft(_utils.pad_array(x[slices], u_shape))
-                # ### v[:] = x_fft * b_fft
                 y_to = np.min((n_signal, k + nfft))
                 # noinspection PyTypeChecker
                 slices[axis] = slice(None, y_to - k)
-                # ###y_fft = ifft_obj().copy()[slices]
                 y_fft = planned_irfft(x_fft * b_fft)[slices]
                 slices[axis] = slice(k, y_to)
                 y[slices] = y[slices] + y_fft.real
@@ -895,8 +882,6 @@ def firfilter(plan_b,
         for k_0 in range(0, n_signal, l):
             k_0_to = np.min((k_0 + l, n_signal))
             slices[axis] = slice(k_0, k_0_to)
-            # ### u[:] = _utils.pad_array(plan_x[slices], u_shape)
-            # ### x_fft_list.append(fft_obj().copy())
             x_fft_list.append(planned_rfft(_utils.pad_array(plan_x[slices],
                                                             u_shape)))
 
@@ -915,18 +900,14 @@ def firfilter(plan_b,
             """
             # nfft-point FFT of filter once
             b_padded = np.hstack((b, np.zeros(nfft - n_filter)))
-            # ### u[:] = (b_padded*filter_expander).transpose(t)
-            # ### b_fft = fft_obj().copy()
             b_fft = planned_rfft((b_padded*filter_expander).transpose(t))
 
             y = np.zeros(y_shape)
             list_idx = 0
             for k in range(0, n_signal, l):
-                # ### v[:] = x_fft_list[list_idx] * b_fft
                 y_to = np.min((n_signal, k + nfft))
                 # noinspection PyTypeChecker
                 slices[axis] = slice(None, y_to - k)
-                # ### y_fft = ifft_obj().copy()[slices]
                 y_fft = planned_irfft(x_fft_list[list_idx] * b_fft)[slices]
                 slices[axis] = slice(k, y_to)
                 y[slices] = y[slices] + y_fft.real
@@ -937,8 +918,6 @@ def firfilter(plan_b,
     # ### Case 2c: N-d signal, constant filter
     elif use_case == '2c':
         bb_padded = np.hstack((plan_b, np.zeros(nfft - n_filter)))
-        # ### u[:] = (bb_padded*filter_expander).transpose(t)
-        # ### bb_fft = fft_obj().copy()
         bb_fft = planned_rfft((bb_padded*filter_expander).transpose(t))
 
         def planned_firfilter(x):
@@ -960,14 +939,10 @@ def firfilter(plan_b,
             for k in range(0, n_signal, l):
                 k_to = np.min((k + l, n_signal))
                 slices[axis] = slice(k, k_to)
-                # ### u[:] = _utils.pad_array(x[slices], u_shape)
-                # ### x_fft = fft_obj().copy()
                 x_fft = planned_rfft(_utils.pad_array(x[slices], u_shape))
-                # ### v[:] = x_fft * bb_fft
                 y_to = np.min((n_signal, k + nfft))
                 # noinspection PyTypeChecker
                 slices[axis] = slice(None, y_to - k)
-                # ### y_fft = ifft_obj().copy()[slices]
                 y_fft = planned_irfft(x_fft * bb_fft)[slices]
                 slices[axis] = slice(k, y_to)
                 y[slices] = y[slices] + y_fft.real
@@ -985,8 +960,6 @@ def firfilter(plan_b,
             this_x_fft_list = []
             for k_p in range(0, n_signal, l):
                 k_p_to = np.min((k_p + l, n_signal))
-                # ### u[:] = _utils.pad_array(x_segment[k_p:k_p_to], u_shape)
-                # ### this_x_fft_list.append(fft_obj().copy())
                 this_x_fft_list.append(planned_rfft(
                     _utils.pad_array(x_segment[k_p:k_p_to], u_shape)))
             x_fft_list.append(this_x_fft_list)
@@ -1007,15 +980,11 @@ def firfilter(plan_b,
                     Filter output
             """
             # nfft-point FFT of filter once
-            # ### u[:] = np.hstack((b, np.zeros(nfft - n_filter)))
-            # ### b_fft = fft_obj().copy()
             b_fft = planned_rfft(np.hstack((b, np.zeros(nfft - n_filter))))
 
             y = np.zeros(y_shape)
             list_idx = 0
             for k in range(0, n_signal, l):
-                # ### v[:] = x_fft_list[segment_no][list_idx] * b_fft
-                # ### y_fft = ifft_obj().copy()
                 y_fft = planned_irfft(x_fft_list[segment_no][list_idx] * b_fft)
                 y_to = np.min((n_signal, k + nfft))
                 y[k:y_to] = y[k:y_to] + y_fft[:y_to - k].real
@@ -1035,8 +1004,6 @@ def firfilter(plan_b,
             for k_p in range(0, n_signal, l):
                 k_p_to = np.min((k_p + l, n_signal))
                 slices[axis] = slice(k_p, k_p_to)
-                # ### u[:] = _utils.pad_array(x_segment[slices], u_shape)   #
-                # ### this_x_fft_list.append(fft_obj().copy())
                 this_x_fft_list.append(planned_rfft(
                     _utils.pad_array(x_segment[slices], u_shape)))
             x_fft_list.append(this_x_fft_list)
@@ -1058,19 +1025,14 @@ def firfilter(plan_b,
             """
             # nfft-point FFT of filter once
             b_padded = np.hstack((b, np.zeros(nfft - n_filter)))
-            # ### u[:] = (b_padded*filter_expander).transpose(t)
-            # ### b_fft = fft_obj().copy()
             b_fft = planned_rfft((b_padded*filter_expander).transpose(t))
 
             y = np.zeros(y_shape)
             list_idx = 0
             for k in range(0, n_signal, l):
-                # ### v[:] = x_fft_list[segment_no][list_idx] * b_fft
                 y_to = np.min((n_signal, k + nfft))
                 # noinspection PyTypeChecker
                 slices[axis] = slice(None, y_to - k)
-                # ### y_fft = ifft_obj().copy()[slices]
-
                 y_fft = planned_irfft(
                     x_fft_list[segment_no][list_idx] * b_fft)[slices]
                 slices[axis] = slice(k, y_to)

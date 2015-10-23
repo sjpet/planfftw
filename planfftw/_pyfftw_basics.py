@@ -447,7 +447,7 @@ def rfftn(a, shape=None, axes=None, fft_pair=False, crop_ifft=False):
         return planned_rfftn
 
 
-def ifft(a, nfft=None, axis=-1, fft_pair=False):
+def ifft(a, nfft=None, axis=-1, fft_pair=False, crop_fft=False):
     """Returns a planned function that computes the 1-D inverse DFT of a
     sequence or array.
 
@@ -462,6 +462,9 @@ def ifft(a, nfft=None, axis=-1, fft_pair=False):
         fft_pair : Optional[boolean]
             Indicates Whether or not to also return an ifft function. Default
             is False.
+        crop_fft : Optional[boolean]
+            Indicates that the fft function should crop its output to match
+            the shape of the input to the ifft function
 
     Returns
     -------
@@ -517,21 +520,21 @@ def ifft(a, nfft=None, axis=-1, fft_pair=False):
     if fft_pair is True:
         fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD', axes=(axis,))
 
-        if n == nfft:
-            def planned_fft(x):
-                u[:] = x
-                return fft_obj().copy()
+        if n > nfft:
+            raise ValueError("NFFT must be at least equal to signal length "
+                             "when returning an FFT pair.")
 
-        elif n < nfft:
-            slices[axis] = n
+        elif n < nfft and crop_fft:
+            slices[axis] = slice(None, n)
 
             def planned_fft(x):
                 u[:] = x
                 return fft_obj().copy()[slices]
 
         else:
-            raise ValueError("NFFT must be at least equal to signal length "
-                             "when returning an FFT pair.")
+            def planned_fft(x):
+                u[:] = x
+                return fft_obj().copy()
 
         return planned_ifft, planned_fft
 
@@ -614,18 +617,10 @@ def irfft(a, nfft=None, axis=-1, fft_pair=False):
     if fft_pair is True:
         fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD', axes=(axis,))
 
-        if n == nfft:
+        if n <= nfft:
             def planned_rfft(x):
                 u[:] = x
                 return fft_obj().copy()
-
-        elif n < nfft:
-            slices[axis] = n
-
-            def planned_rfft(x):
-                u[:] = x
-                return fft_obj().copy()[slices]
-
         else:
             raise ValueError("NFFT must be at least equal to signal length "
                              "when returning an FFT pair.")
@@ -636,7 +631,7 @@ def irfft(a, nfft=None, axis=-1, fft_pair=False):
         return planned_irfft
 
 
-def ifftn(a, shape=None, axes=None, fft_pair=False):
+def ifftn(a, shape=None, axes=None, fft_pair=False, crop_fft=False):
     """Returns a planned function that computes the N-D DFT of an array.
 
     Parameters
@@ -650,6 +645,9 @@ def ifftn(a, shape=None, axes=None, fft_pair=False):
         fft_pair : Optional[boolean]
             Indicates Whether or not to also return an ifft function. Default
             is False.
+        crop_fft : Optional[boolean]
+            Indicates that the fft function should crop its output to match
+            the shape of the input to the ifft function
 
     Returns
     -------
@@ -731,6 +729,14 @@ def ifftn(a, shape=None, axes=None, fft_pair=False):
             raise ValueError("Number of FFT points must be equal to or greater"
                              "than the signal length for each axis when "
                              "returning an FFT pair.")
+
+        elif has_smaller_axis and crop_fft:
+            for axis in axes:
+                slices[axis] = slice(0, a_shape[axis])
+
+            def planned_fftn(x):
+                u[:] = x
+                return fft_obj().copy()[slices]
 
         else:
             def planned_fftn(x):

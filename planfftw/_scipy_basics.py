@@ -321,7 +321,7 @@ def rfftn(a, shape=None, axes=None, fft_pair=False, crop_ifft=False):
         return planned_rfftn
 
 
-def ifft(a, nfft=None, axis=-1, fft_pair=False):
+def ifft(a, nfft=None, axis=-1, fft_pair=False, crop_fft=False):
     """Returns a planned function that computes the 1-D inverse DFT of a
     sequence or array.
 
@@ -336,6 +336,9 @@ def ifft(a, nfft=None, axis=-1, fft_pair=False):
         fft_pair : Optional[boolean]
             Indicates Whether or not to also return an ifft function. Default
             is False.
+        crop_fft : Optional[boolean]
+            Indicates that output from the fft function should be cropped to
+            match the input to the ifft function.
 
     Returns
     -------
@@ -364,19 +367,19 @@ def ifft(a, nfft=None, axis=-1, fft_pair=False):
 
     # Define fft function
     if fft_pair is True:
-        if n == nfft:
-            def planned_fft(x):
-                return sfft.fft(x, nfft, axis)
+        if n > nfft:
+            raise ValueError("NFFT must be at least equal to signal length "
+                             "when returning an FFT pair.")
 
-        elif n < nfft:
-            slices[axis] = n
+        elif n < nfft and crop_fft:
+            slices[axis] = slice(None, n)
 
             def planned_fft(x):
                 return sfft.fft(x, nfft, axis)[slices]
 
         else:
-            raise ValueError("NFFT must be at least equal to signal length "
-                             "when returning an FFT pair.")
+            def planned_fft(x):
+                return sfft.fft(x, nfft, axis)
 
         return planned_ifft, planned_fft
 
@@ -536,7 +539,7 @@ def ifftn(a, shape=None, axes=None, fft_pair=False, crop_fft=False):
         return planned_ifftn
 
 
-def irfftn(a, shape=None, axes=None, fft_pair=False, crop_fft=False):
+def irfftn(a, shape=None, axes=None, fft_pair=False):
     """Returns a planned function that computes the N-D DFT of a real-valued
     array.
 
@@ -553,9 +556,6 @@ def irfftn(a, shape=None, axes=None, fft_pair=False, crop_fft=False):
         fft_pair : Optional[boolean]
             Indicates Whether or not to also return an ifft function. Default
             is False.
-        crop_fft : Optional[boolean]
-            Indicates that output from the fft function should be cropped to
-            match the input to the ifft function.
 
     Returns
     -------
@@ -607,14 +607,6 @@ def irfftn(a, shape=None, axes=None, fft_pair=False, crop_fft=False):
             raise ValueError("Number of FFT points must be equal to or greater"
                              "than the signal length for each axis when "
                              "returning an FFT pair.")
-
-        elif has_smaller_axis and crop_fft:
-            for axis in axes:
-                slices[axis] = slice(0, a_shape[axis])
-
-            def planned_rfftn(x):
-                # scipy.fftpack.fftn doesn't handle mixed sign axes well
-                return np.fft.rfftn(x, shape, axes)[slices]
 
         else:
             def planned_rfftn(x):
