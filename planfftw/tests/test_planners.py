@@ -11,12 +11,59 @@ from numpy.testing import assert_array_almost_equal
 class TestFirFilter:
     b = np.array([0, 1, -2])
     x = np.array([1.2, 0.4, -0.1, 1.2, 1.1, 0.9, -0.7, -0.3, 0.1, -0.2, 0.3])
+    x2 = np.array([[1.2, 0.4, -0.1, 1.2, 1.1, 0.9,
+                    -0.7, -0.3, 0.1, -0.2, 0.3],
+                   [0.7, 1.1, -0.2, -0.3, 0.1, 0.2,
+                    -0.2, -0.7, 1.2, 1.0, 0.8]])
+    x3 = np.array([[[1.2, 0.4, -0.1, 1.2, 1.1, 0.9,
+                     -0.7, -0.3, 0.1, -0.2, 0.3],
+                    [0.7, 1.1, -0.2, -0.3, 0.1, 0.2,
+                     -0.2, -0.7, 1.2, 1.0, 0.8]],
+                   [[0.7, 1.1, -0.2, -0.3, 0.1, 0.2,
+                     -0.2, -0.7, 1.2, 1.0, 0.8],
+                    [1.2, 0.4, -0.1, 1.2, 1.1, 0.9,
+                     -0.7, -0.3, 0.1, -0.2, 0.3]]])
 
     xfb = np.array([0., 1.2, -2., -0.9, 1.4, -1.3, -1.3, -2.5, 1.1, 0.7, -0.4])
+    x2fb = np.array([[0., 1.2, -2., -0.9, 1.4, -1.3,
+                      -1.3, -2.5, 1.1, 0.7, -0.4],
+                     [0., 0.7, -0.3, -2.4, 0.1, 0.7,
+                      0., -0.6, -0.3, 2.6, -1.4]])
 
-    def test_simple_firfilter(self):
+    def test_firfilter_1d_input(self):
         my_firfilter = firfilter(self.b, self.x)
         assert_array_almost_equal(my_firfilter(self.b, self.x), self.xfb)
+
+    def test_firfilter_1d_input_x_constant(self):
+        my_firfilter = firfilter(self.b, self.x, constant_signal=True)
+        assert_array_almost_equal(my_firfilter(self.b), self.xfb)
+
+    def test_firfilter_1d_input_b_constant(self):
+        my_firfilter = firfilter(self.b, self.x, constant_filter=True)
+        assert_array_almost_equal(my_firfilter(self.x), self.xfb)
+
+    def test_firfilter_2d_input(self):
+        my_firfilter = firfilter(self.b, self.x2)
+        assert_array_almost_equal(my_firfilter(self.b, self.x2), self.x2fb)
+
+    def test_firfilter_2d_input_x_constant(self):
+        my_firfilter = firfilter(self.b, self.x2, constant_signal=True)
+        assert_array_almost_equal(my_firfilter(self.b), self.x2fb)
+
+    def test_firfilter_2d_input_b_constant(self):
+        my_firfilter = firfilter(self.b, self.x2, constant_filter=True)
+        assert_array_almost_equal(my_firfilter(self.x2), self.x2fb)
+
+    def test_firfilter_1d_segments(self):
+        my_firfilter = firfilter(self.b, self.x2, x_segmented=True)
+        assert_array_almost_equal(my_firfilter(self.b, 0), self.x2fb[0])
+        assert_array_almost_equal(my_firfilter(self.b, 1), self.x2fb[1])
+
+    def test_firfilter_2d_segments(self):
+        my_firfilter = firfilter(self.b, self.x3, x_segmented=True)
+        assert_array_almost_equal(my_firfilter(self.b, 0), self.x2fb)
+        assert_array_almost_equal(my_firfilter(self.b, 1),
+                                  self.x2fb[::-1, :])
 
 
 class TestCorrelate:
@@ -36,6 +83,7 @@ class TestCorrelate:
                                   self.rxy[2:9])
         assert_array_almost_equal(my_correlate_3(self.x, self.y),
                                   self.rxy[4:7])
+
 
 class TestConvolve:
     x = np.array([1.2, 0.3, -0.2, 0.7, 0.3, 0.1, 0.1])

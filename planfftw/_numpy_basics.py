@@ -108,8 +108,7 @@ def rfft(a, nfft=None, axis=-1, fft_pair=False, crop_ifft=False):
 
     if nfft is None:
         nfft = shape[axis]
-    print(nfft)
-
+    
     # Define fft function
     def planned_rfft(x):
         return np.fft.rfft(x, nfft, axis)
