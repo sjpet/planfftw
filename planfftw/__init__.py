@@ -8,6 +8,7 @@ from .planners import (fft,
                        ifftn,
                        irfftn,
                        firfilter,
-                       correlate)
+                       correlate,
+                       convolve)
 
-__version__ = '0.1'
+__version__ = '0.2'

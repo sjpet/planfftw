@@ -1,5 +1,5 @@
-- Rewrite firfilter to use the fft functions
-- Implement fallback on scipy.fftpack functions if pyfftw cannot be imported
-- Implement convolve (simply copy correlate and remove rev_slices?)
+v 0.2
+- Additional testing
+
 - Look into FFT-based IIR filtering
 - Spectral Density estimation (intially Welch, then possibly others)

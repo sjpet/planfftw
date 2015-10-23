@@ -92,3 +92,62 @@ def expand_me(a, axis, ndim):
         a = np.expand_dims(a, -1)
 
     return a
+
+
+def scipy_rfft_to_complex(a, axis=-1):
+    odd = a.shape[axis] % 2
+    n_dim = len(a.shape)
+
+    # define slices
+    slices_0 = [slice(None)] * n_dim
+    slices_0[axis] = slice(0, 1)
+    slices = [slice(None)] * n_dim
+    slices[axis] = slice(1, None, 2)
+
+    # take real part
+    a_complex = np.concatenate((a[slices_0], a[slices]), axis=axis) + 0j
+
+    # change slices and add complex part
+    slices[axis] = slice(2, None, 2)
+    if odd:
+        slices_0[axis] = slice(1, None)
+        a_complex[slices_0] += 1j*a[slices]
+    else:
+        slices_0[axis] = slice(1, -1)
+        a_complex[slices_0] += 1j*a[slices]
+
+    return a_complex
+
+
+def complex_to_scipy_rfft(a_complex, axis=-1, even=None):
+    # If not given, determine odd or even output
+    if even is None:
+        if a_complex[-1].imag == 0:
+            even = 1
+        else:
+            even = 0
+
+    # Define output shape and create empty matrix
+    out_shape = list(a_complex.shape)
+    n = out_shape[axis]
+    out_shape[axis] += out_shape[axis] - (1 + even)
+    a_sfft = np.empty(out_shape)
+
+    # set up slices and divide input into real and imaginary parts
+    slices_0 = [slice(None)] * len(out_shape)
+    slices = [slice(None)] * len(out_shape)
+    slices_0[axis] = slice(0, 1)
+    ar = a_complex.real
+    ac = a_complex.imag
+
+    # Fill the output
+    a_sfft[slices_0] = ar[slices_0]
+    slices_0[axis] = slice(1, None, 2)
+    slices[axis] = slice(1, None)
+    a_sfft[slices_0] = ar[slices]
+    slices_0[axis] = slice(2, None, 2)
+    slices[axis] = slice(1, n - even)
+    a_sfft[slices_0] = ac[slices]
+
+    return a_sfft
+
