@@ -89,8 +89,45 @@ class TestConvolve:
     x = np.array([1.2, 0.3, -0.2, 0.7, 0.3, 0.1, 0.1])
     y = np.array([1.1, 0.7, 0.1, -0.2, -0.6])
 
-    cxy = np.array([ 1.32, 1.17, 0.11, 0.42, 0.02, 0.25, 0.19, -0.4, -0.19,
-                     -0.08, -0.06])
+    x2 = np.array([[1.2, 0.3, -0.2, 0.7, 0.3, 0.1, 0.1],
+                   [0.8, -0.1, -0.2, -0.1, 0.2, 0.3, 0.1]])
+    y2 = np.array([[1.1, 0.7, 0.1, -0.2, -0.6],
+                   [0.6, 0.4, 0.3, 0.2, -0.1]])
+
+    x3 = np.array([[0.1, 0.5, -0.2, 0.4, 0.9],
+                   [-0.4, -0.1, 0.2, 0.2, 0.1],
+                   [0.5, 0.3, -0.2, 0.4, 0.6],
+                   [0.1, 0.1, 0.2, 0.1, 0.1],
+                   [0.3, -0.2, 0.1, -0.2, 0.3]])
+    y3 = np.array([[0.7, 0.8, 0.1, -0.1],
+                   [0.2, -0.2, 0.2, -0.3],
+                   [-0.1, -0.7, 0.9, 1.2]])
+
+    cxy = np.array([1.32, 1.17, 0.11, 0.42, 0.02, 0.25, 0.19, -0.4, -0.19,
+                    -0.08, -0.06])
+
+    cx2y = np.array([[1.32, 1.17, 0.11, 0.42, 0.02, 0.25, 0.19, -0.4, -0.19,
+                      -0.08, -0.06],
+                     [0.88, 0.45, -0.21, -0.42, -0.33, 0.56, 0.48, 0.12, -0.17,
+                      -0.2, -0.06]])
+
+    cxy2 = np.array([[1.32, 1.17, 0.11, 0.42, 0.02, 0.25, 0.19, -0.4, -0.19,
+                      -0.08, -0.06],
+                     [0.72, 0.66, 0.36, 0.67, 0.34, 0.32, 0.35, 0.06, 0.02,
+                      0.01, -0.01]])
+
+    cx2y2 = np.array([[1.32, 1.17, 0.11, 0.42, 0.02, 0.25,
+                       0.19, -0.4, -0.19, -0.08, -0.06],
+                      [0.48, 0.26, 0.08, -0.01, -0.08, 0.2,
+                       0.24, 0.18, 0.07, -0.01, -0.01]])
+
+    cx3y3 = np.array([[0.07, 0.43, 0.27, 0.16, 0.88, 0.78, 0.05, -0.09],
+                      [-0.26, -0.31, -0.1, 0.52, 0.17, 0.04, 0.05, -0.28],
+                      [0.26, 0.55, -0.11, 0.87, 0.79, -0.01, 1.27, 0.99],
+                      [0.21, 0.4, -0.08, -0.47, -0.02, 0.44, 0.33, -0.07],
+                      [0.18, -0.28, 0.24, 0.83, -0.07, -0.15, 1.06, 0.66],
+                      [0.05, -0.18, 0.12, -0.13, 0.4, 0.13, 0.33, 0.03],
+                      [-0.03, -0.19, 0.4, 0.13, -0.04, -0.27, 0.03, 0.36]])
 
     def test_convolve_1d(self):
         my_convolve_1 = convolve(self.x, self.y)
@@ -125,10 +162,94 @@ class TestConvolve:
         assert_array_almost_equal(my_convolve_3(self.x),
                                   self.cxy[4:7])
 
-    # single axes in two N-D arrays
-    # multiple axes in N-D arrays
-    # single axis in N-D with 1-D
-    # 1-D with single axis in N-D
-    # 1-D segments with 1-D sequence
-    # N-D segments with N-D sequence
-    # single axis in N-D segments with 1-D sequence
+    def test_convolve_single_2d(self):
+        my_convolve_1 = convolve(self.x2, self.y2, axes=-1)
+        my_convolve_2 = convolve(self.x2, self.y2, 'same', axes=-1)
+        my_convolve_3 = convolve(self.x2, self.y2, 'valid', axes=-1)
+        assert_array_almost_equal(my_convolve_1(self.x2, self.y2),
+                                  self.cx2y2)
+        assert_array_almost_equal(my_convolve_2(self.x2, self.y2),
+                                  self.cx2y2[:, 2:9])
+        assert_array_almost_equal(my_convolve_3(self.x2, self.y2),
+                                  self.cx2y2[:, 4:7])
+
+    def test_convolve_single_2d_x_constant(self):
+        my_convolve_1 = convolve(self.x2, self.y2, axes=-1, constant_x=True)
+        my_convolve_2 = convolve(self.x2,
+                                 self.y2,
+                                 'same',
+                                 axes=-1,
+                                 constant_x=True)
+        my_convolve_3 = convolve(self.x2,
+                                 self.y2,
+                                 'valid',
+                                 axes=-1,
+                                 constant_x=True)
+        assert_array_almost_equal(my_convolve_1(self.y2), self.cx2y2)
+        assert_array_almost_equal(my_convolve_2(self.y2), self.cx2y2[:, 2:9])
+        assert_array_almost_equal(my_convolve_3(self.y2), self.cx2y2[:, 4:7])
+
+    def test_convolve_single_2d_y_constant(self):
+        my_convolve_1 = convolve(self.x2, self.y2, axes=-1, constant_y=True)
+        my_convolve_2 = convolve(self.x2,
+                                 self.y2,
+                                 'same',
+                                 axes=-1,
+                                 constant_y=True)
+        my_convolve_3 = convolve(self.x2,
+                                 self.y2,
+                                 'valid',
+                                 axes=-1,
+                                 constant_y=True)
+        assert_array_almost_equal(my_convolve_1(self.x2), self.cx2y2)
+        assert_array_almost_equal(my_convolve_2(self.x2), self.cx2y2[:, 2:9])
+        assert_array_almost_equal(my_convolve_3(self.x2), self.cx2y2[:, 4:7])
+
+    def test_convolve_multiple_2d(self):
+        my_convolve_1 = convolve(self.x3, self.y3)
+        my_convolve_2 = convolve(self.x3, self.y3, 'same')
+        my_convolve_3 = convolve(self.x3, self.y3, 'valid')
+        assert_array_almost_equal(my_convolve_1(self.x3, self.y3), self.cx3y3)
+        assert_array_almost_equal(my_convolve_2(self.x3, self.y3),
+                                  self.cx3y3[1:6, 1:6])
+        assert_array_almost_equal(my_convolve_3(self.x3, self.y3),
+                                  self.cx3y3[2:5, 3:5])
+
+    def test_convolve_multiple_2d_x_constant(self):
+        my_convolve_1 = convolve(self.x3, self.y3, constant_x=True)
+        my_convolve_2 = convolve(self.x3, self.y3, 'same', constant_x=True)
+        my_convolve_3 = convolve(self.x3, self.y3, 'valid', constant_x=True)
+        assert_array_almost_equal(my_convolve_1(self.y3), self.cx3y3)
+        assert_array_almost_equal(my_convolve_2(self.y3), self.cx3y3[1:6, 1:6])
+        assert_array_almost_equal(my_convolve_3(self.y3), self.cx3y3[2:5, 3:5])
+
+    def test_convolve_multiple_2d_y_constant(self):
+        my_convolve_1 = convolve(self.x3, self.y3, constant_y=True)
+        my_convolve_2 = convolve(self.x3, self.y3, 'same', constant_y=True)
+        my_convolve_3 = convolve(self.x3, self.y3, 'valid', constant_y=True)
+        assert_array_almost_equal(my_convolve_1(self.x3), self.cx3y3)
+        assert_array_almost_equal(my_convolve_2(self.x3), self.cx3y3[1:6, 1:6])
+        assert_array_almost_equal(my_convolve_3(self.x3), self.cx3y3[2:5, 3:5])
+
+    def test_convolve_single_2d_1d(self):
+        my_convolve_1 = convolve(self.x2, self.y)
+        assert_array_almost_equal(my_convolve_1(self.x2, self.y), self.cx2y)
+
+    def test_convolve_1d_single_2d(self):
+        my_convolve_1 = convolve(self.x, self.y2)
+        assert_array_almost_equal(my_convolve_1(self.x, self.y2), self.cxy2)
+
+    def test_convolve_1d_segments_1d(self):
+        my_convolve_1 = convolve(self.x2, self.y, x_segmented=True)
+        assert_array_almost_equal(my_convolve_1(0, self.y), self.cx2y[0])
+        assert_array_almost_equal(my_convolve_1(1, self.y), self.cx2y[1])
+
+    def test_convolve_2d_segments_2d(self):
+        xs = np.array([self.x3, self.x3])
+        my_convolve_1 = convolve(xs, self.y3, x_segmented=True)
+        assert_array_almost_equal(my_convolve_1(0, self.y3), self.cx3y3)
+
+    def test_convolve_single_2d_segments_1d(self):
+        xs = np.array([self.x2, self.x2])
+        my_convolve_1 = convolve(xs, self.y, x_segmented=True)
+        assert_array_almost_equal(my_convolve_1(0, self.y), self.cx2y)

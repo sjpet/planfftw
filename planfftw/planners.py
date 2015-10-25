@@ -108,11 +108,18 @@ def _convolve(plan_x,
     y_ndim = len(y_shape)
 
     if axes is None:
-        axes = [k for k in range(x_segmented, x_ndim)]
+        x_ndim_s = x_ndim - x_segmented
+        if x_ndim_s >= y_ndim:
+            from_axis = x_ndim - y_ndim
+            to_axis = x_ndim
+        else:
+            from_axis = y_ndim - x_ndim
+            to_axis = y_ndim
+        axes = [k for k in range(from_axis, to_axis)]
 
     # Make sure axes is iterable
-        if np.asarray(axes).ndim == 0:
-            axes = (axes,)
+    if np.asarray(axes).ndim == 0:
+        axes = (axes,)
 
     n_axes = len(axes)
 
@@ -540,11 +547,14 @@ def _convolve(plan_x,
                     y_fft = planned_rfftn(y)
                     return planned_irfftn(x_fft_0[n] * y_fft)[out_slices]
 
+        # Convolve/correlate single axis in N-d segment with 1-d sequence
         else:
             axes = axes[0]
             if axes > 0:
                 axes -= 1
-
+            print(x_shape)
+            print(axes)
+            print(y_shape)
             x_len = x_shape[axes]
             y_len = y_shape[0]
             l = np.max((x_len, y_len))
@@ -570,7 +580,9 @@ def _convolve(plan_x,
             else:
                 out_slices[axes] = slice(0, x_len + y_len - 1)
 
-            x_fft_0 = planned_rfft(plan_x)
+            x_fft_0 = []
+            for segment in plan_x:
+                x_fft_0.append(planned_rfft(segment))
 
             if correlate:
                 def planned_convolve(n, y):

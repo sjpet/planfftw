@@ -1,5 +1,2 @@
-v 0.2
-- Additional testing
-
 - Look into FFT-based IIR filtering
 - Spectral Density estimation (intially Welch, then possibly others)
