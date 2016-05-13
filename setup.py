@@ -10,7 +10,7 @@ setup(name="planfftw",
       author="Stefan Peterson",
       author_email="stefan.j.peterson@gmail.com",
       url="https://github.com/sjpet/planfftw",
-      download_url="https://github.com/sjpet/planfftw/tarball/0.1",
+      download_url="https://github.com/sjpet/planfftw/tarball/%s" % planfftw.__version__,
 #      requires=["pyfftw>=0.9.2",        # Probably lower versions
 #                "numpy>=1.8.2"],        # Probably lower versions
 #      testing_requires=["pytest>=2.8.2"],       # Probably lower versions
