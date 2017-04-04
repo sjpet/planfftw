@@ -3,8 +3,9 @@ planfftw
 
 planfftw provides Julia-inspired function planners for fft and a number of fft-
 based operations. The initial objective was to provide a clean and highly
-optimized interface to the excellent PyFFTW package, but falls back on 
-scipy.fftpack or numpy.fft should that not be available.
+optimized interface to the excellent PyFFTW package. However, PyFFTW is not
+a strict requirement and planfftw falls back on scipy.fftpack or numpy.fft 
+should it not be available.
 
 Requirements
 ------------
@@ -19,6 +20,7 @@ PyFFTW
 
 Installation
 ------------
+Install with::
 
     pip install planfftw
 
