@@ -599,6 +599,55 @@ def _convolve(plan_x,
 
 
 # ### Public functions
+
+def firfilter2(rfft_pair, filter_length, signal_length, fft_size):
+    """Plan a FIR-filter function from a pair of RFFT-functions.
+
+    Parameters
+    ----------
+    rfft_pair: (Callable, Callable)
+        A matching pair of RFFT- and IRFFT-functions
+    filter_length: int
+    signal_length: int
+    fft_size: int
+
+    Returns
+    -------
+    Callable
+        The filtering function
+    Callable
+        The filter transform function
+    Callable
+        The signal transform function
+
+    """
+
+    rfft_function, irfft_function = rfft_pair
+    segment_length = fft_size - filter_length + 1
+
+    def filter_transform_function(b):
+        return rfft_function(np.hstack((b, np.zeros(fft_size - filter_length))))
+
+    def signal_transform_function(x):
+        for k in range(0, signal_length, segment_length):
+            k_to = np.min((k + segment_length, signal_length))
+            yield rfft_function(np.hstack((x[k:k_to],
+                                           np.zeros(fft_size - (k_to - k)))))
+
+    def filter_function(transformed_filter, transformed_segments):
+        y = np.zeros(signal_length)
+        for k in range(0, signal_length, segment_length):
+            y_ = irfft_function(next(transformed_segments) * transformed_filter)
+            y_to = np.min((signal_length, k + fft_size))
+            y[k:y_to] += y_[:y_to - k].real
+
+        return y
+
+    return (filter_function,
+            filter_transform_function,
+            signal_transform_function)
+
+
 def firfilter(plan_b,
               plan_x,
               axis=-1,
@@ -759,6 +808,12 @@ def firfilter(plan_b,
 
     # ### Case 1a: 1-d signal
     if use_case == '1a':
+        (filter_function,
+         filter_transform_function,
+         signal_transform_function) = firfilter2((planned_rfft, planned_irfft),
+                                                 n_filter,
+                                                 n_signal,
+                                                 nfft)
         def planned_firfilter(b, x):
             """Filter data with a FIR filter.
 
@@ -774,19 +829,8 @@ def firfilter(plan_b,
                 numpy.array
                     Filter output
             """
-            # nfft-point FFT of filter once
-            b_fft = planned_rfft(np.hstack((b, np.zeros(nfft - n_filter))))
-
-            y = np.zeros(y_shape)
-            for k in range(0, n_signal, l):
-                k_to = np.min((k + l, n_signal))
-                x_fft = planned_rfft(np.hstack((x[k:k_to],
-                                                np.zeros(nfft - (k_to - k)))))
-                y_fft = planned_irfft(x_fft * b_fft)
-                y_to = np.min((n_signal, k + nfft))
-                y[k:y_to] = y[k:y_to] + y_fft[:y_to - k].real
-
-            return y
+            return filter_function(filter_transform_function(b), signal_transform_function(x))
+            
 
     # ### Case 1b: 1-d signal, constant signal
     elif use_case == '1b':

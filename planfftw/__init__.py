@@ -22,4 +22,4 @@ from .planners import (fft,
 # clean up namespace
 del planners
 
-__version__ = '0.2'
+__version__ = '0.3'
