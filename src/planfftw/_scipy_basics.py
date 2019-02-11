@@ -1,5 +1,6 @@
 #!usr/bin/env python
 
+import scipy.fftpack as sfft
 import numpy as np
 try:
     from . import _utils
@@ -47,7 +48,7 @@ def fft(a, nfft=None, axis=-1, fft_pair=False, crop_ifft=False):
 
     # Define fft function
     def planned_fft(x):
-        return np.fft.fft(x, nfft, axis)
+        return sfft.fft(x, nfft, axis)
 
     # Define ifft function
     if fft_pair is True:
@@ -60,11 +61,11 @@ def fft(a, nfft=None, axis=-1, fft_pair=False, crop_ifft=False):
             slices[axis] = slice(None, n)
 
             def planned_ifft(x):
-                return np.fft.ifft(x, nfft, axis)[slices]
+                return sfft.ifft(x, nfft, axis)[tuple(slices)]
 
         else:
             def planned_ifft(x):
-                return np.fft.ifft(x, nfft, axis)
+                return sfft.ifft(x, nfft, axis)
 
         return planned_fft, planned_ifft
 
@@ -101,6 +102,7 @@ def rfft(a, nfft=None, axis=-1, fft_pair=False, crop_ifft=False):
     # Get shape
     shape = _utils.get_shape(a)
     n = shape[axis]
+    n_even = 1 - (n % 2)
 
     # Set up slices and pyfftw shapes
     n_dim = len(shape)
@@ -108,10 +110,10 @@ def rfft(a, nfft=None, axis=-1, fft_pair=False, crop_ifft=False):
 
     if nfft is None:
         nfft = shape[axis]
-    
+
     # Define fft function
     def planned_rfft(x):
-        return np.fft.rfft(x, nfft, axis)
+        return _utils.scipy_rfft_to_complex(sfft.rfft(x, nfft, axis), axis)
 
     # Define ifft function
     if fft_pair is True:
@@ -124,11 +126,17 @@ def rfft(a, nfft=None, axis=-1, fft_pair=False, crop_ifft=False):
             slices[axis] = slice(None, n)
 
             def planned_irfft(x):
-                return np.fft.irfft(x, nfft, axis)[slices]
+                x_sfft = _utils.complex_to_scipy_rfft(x,
+                                                      axis=axis,
+                                                      even=n_even)
+                return sfft.irfft(x_sfft, nfft, axis)[slices]
 
         else:
             def planned_irfft(x):
-                return np.fft.irfft(x, nfft, axis)
+                x_sfft = _utils.complex_to_scipy_rfft(x,
+                                                      axis=axis,
+                                                      even=n_even)
+                return sfft.irfft(x_sfft, nfft, axis)
 
         return planned_rfft, planned_irfft
 
@@ -195,6 +203,7 @@ def fftn(a, shape=None, axes=None, fft_pair=False, crop_ifft=False):
 
     # Define fft function
     def planned_fftn(x):
+        # scipy.fftpack.fftn doesn't handle mixed sign axes well
         return np.fft.fftn(x, shape, axes)
 
     # Define ifftn function
@@ -209,10 +218,12 @@ def fftn(a, shape=None, axes=None, fft_pair=False, crop_ifft=False):
                 slices[axis] = slice(0, a_shape[axis])
 
             def planned_ifftn(x):
-                return np.fft.ifftn(x, shape, axes)[slices]
+                # scipy.fftpack.fftn doesn't handle mixed sign axes well
+                return np.fft.ifftn(x, shape, axes)[tuple(slices)]
 
         else:
             def planned_ifftn(x):
+                # scipy.fftpack.fftn doesn't handle mixed sign axes well
                 return np.fft.ifftn(x, shape, axes)
 
         return planned_fftn, planned_ifftn
@@ -281,7 +292,8 @@ def rfftn(a, shape=None, axes=None, fft_pair=False, crop_ifft=False):
 
     # Define fft function
     def planned_rfftn(x):
-        return np.fft.rfftn(x, shape, axes)
+        # scipy.fftpack.fftn doesn't handle mixed sign axes well
+        return np.fft.rfftn(x, shape, axes)[tuple(slices)]
 
     # Define ifftn function
     if fft_pair is True:
@@ -295,10 +307,12 @@ def rfftn(a, shape=None, axes=None, fft_pair=False, crop_ifft=False):
                 slices[axis] = slice(0, a_shape[axis])
 
             def planned_irfftn(x):
-                return np.fft.irfftn(x, shape, axes)[slices]
+                # scipy.fftpack.fftn doesn't handle mixed sign axes well
+                return np.fft.irfftn(x, shape, axes)[tuple(slices)]
 
         else:
             def planned_irfftn(x):
+                # scipy.fftpack.fftn doesn't handle mixed sign axes well
                 return np.fft.irfftn(x, shape, axes)
 
         return planned_rfftn, planned_irfftn
@@ -307,7 +321,7 @@ def rfftn(a, shape=None, axes=None, fft_pair=False, crop_ifft=False):
         return planned_rfftn
 
 
-def ifft(a, nfft=None, axis=-1, fft_pair=False, crop_fft=True):
+def ifft(a, nfft=None, axis=-1, fft_pair=False, crop_fft=False):
     """Returns a planned function that computes the 1-D inverse DFT of a
     sequence or array.
 
@@ -349,7 +363,7 @@ def ifft(a, nfft=None, axis=-1, fft_pair=False, crop_fft=True):
 
     # Define ifft function
     def planned_ifft(x):
-        return np.fft.ifft(x, nfft, axis)
+        return sfft.ifft(x, nfft, axis)
 
     # Define fft function
     if fft_pair is True:
@@ -361,11 +375,11 @@ def ifft(a, nfft=None, axis=-1, fft_pair=False, crop_fft=True):
             slices[axis] = slice(None, n)
 
             def planned_fft(x):
-                return np.fft.fft(x, nfft, axis)[slices]
+                return sfft.fft(x, nfft, axis)[tuple(slices)]
 
         else:
             def planned_fft(x):
-                return np.fft.fft(x, nfft, axis)
+                return sfft.fft(x, nfft, axis)
 
         return planned_ifft, planned_fft
 
@@ -399,19 +413,33 @@ def irfft(a, nfft=None, axis=-1, fft_pair=False):
     # Get shape
     shape = _utils.get_shape(a)
     n = 2*(shape[axis] - 1)
+    n_even = 1 - (n % 2)
+
+    # Set up slices and pyfftw shapes
+    n_dim = len(shape)
+    slices = [slice(None)] * n_dim
 
     if nfft is None:
-        nfft = 2*(shape[axis] - 1)
+        nfft = n
 
     # Define ifft function
     def planned_irfft(x):
-        return np.fft.irfft(x, nfft, axis)
+        x_sfft = _utils.complex_to_scipy_rfft(x, axis=axis, even=n_even)
+        return sfft.irfft(x_sfft, nfft, axis)
 
     # Define fft function
     if fft_pair is True:
-        if n <= nfft:
+        if n == nfft:
             def planned_rfft(x):
-                return np.fft.rfft(x, nfft, axis)
+                return _utils.scipy_rfft_to_complex(sfft.rfft(x, nfft, axis),
+                                                    axis=axis)
+
+        elif n < nfft:
+            slices[axis] = n
+
+            def planned_rfft(x):
+                return _utils.scipy_rfft_to_complex(sfft.rfft(x, nfft, axis),
+                                                    axis=axis)[slices]
 
         else:
             raise ValueError("NFFT must be at least equal to signal length "
@@ -482,6 +510,7 @@ def ifftn(a, shape=None, axes=None, fft_pair=False, crop_fft=False):
 
     # Define ifft function
     def planned_ifftn(x):
+        # scipy.fftpack.fftn doesn't handle mixed sign axes well
         return np.fft.ifftn(x, shape, axes)
 
     # Define fftn function
@@ -496,10 +525,12 @@ def ifftn(a, shape=None, axes=None, fft_pair=False, crop_fft=False):
                 slices[axis] = slice(0, a_shape[axis])
 
             def planned_fftn(x):
-                return np.fft.fftn(x, shape, axes)[slices]
+                # scipy.fftpack.fftn doesn't handle mixed sign axes well
+                return np.fft.fftn(x, shape, axes)[tuple(slices)]
 
         else:
             def planned_fftn(x):
+                # scipy.fftpack.fftn doesn't handle mixed sign axes well
                 return np.fft.fftn(x, shape, axes)
 
         return planned_ifftn, planned_fftn
@@ -525,9 +556,6 @@ def irfftn(a, shape=None, axes=None, fft_pair=False):
         fft_pair : Optional[boolean]
             Indicates Whether or not to also return an ifft function. Default
             is False.
-        crop_fft : Optional[boolean]
-            Indicates that output from the fft function should be cropped to
-            match the input to the ifft function.
 
     Returns
     -------
@@ -562,10 +590,15 @@ def irfftn(a, shape=None, axes=None, fft_pair=False):
     a_shape_out = list(a_shape)
     a_shape_out[axes[-1]] = 2*(a_shape_out[axes[-1]] - 1)
 
+    # Set up slices
+    slices = [slice(None)] * n_dim
+
+    has_smaller_axis = any(s1 < s2 for s1, s2 in zip(a_shape_out, shape))
     has_larger_axis = any(s1 > s2 for s1, s2 in zip(a_shape_out, shape))
 
     # Define ifft function
     def planned_irfftn(x):
+        # scipy.fftpack.fftn doesn't handle mixed sign axes well
         return np.fft.irfftn(x, shape, axes)
 
     # Define fftn function
@@ -577,6 +610,7 @@ def irfftn(a, shape=None, axes=None, fft_pair=False):
 
         else:
             def planned_rfftn(x):
+                # scipy.fftpack.fftn doesn't handle mixed sign axes well
                 return np.fft.rfftn(x, shape, axes)
 
         return planned_irfftn, planned_rfftn

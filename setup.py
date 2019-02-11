@@ -1,19 +1,44 @@
 #!usr/bin/env python
-from distutils.core import setup
+# -*- coding: utf-8 -*-
 
-import planfftw
+from setuptools import find_packages, setup
+from glob import glob
+from os.path import splitext, basename
+
+with open("README.md") as fh:
+    long_description = fh.read()
+
+__version__ = "0.3.0"
+
 
 setup(name="planfftw",
-      packages=["planfftw"],
-      version=planfftw.__version__,
+      version=__version__,
+      license="GPL-3.0",
       description="Julia-inspired function planners around pyfftw",
+      long_description=long_description,
       author="Stefan Peterson",
-      author_email="stefan.j.peterson@gmail.com",
+      author_email="stefan.peterson@rubico.com",
       url="https://github.com/sjpet/planfftw",
-      download_url="https://github.com/sjpet/planfftw/tarball/%s" % planfftw.__version__,
-#      requires=["pyfftw>=0.9.2",        # Probably lower versions
-#                "numpy>=1.8.2"],        # Probably lower versions
-#      testing_requires=["pytest>=2.8.2"],       # Probably lower versions
-      keywords=["pyfftw", "fft", "fftw", "plan", "planner"],
-      classifiers=[])
+      packages=find_packages("src"),
+      package_dir={"": "src"},
+      py_modules=[splitext(basename(path))[0] for path in glob("src/*.py")],
+      include_package_data=True,
+      download_url="https://github.com/sjpet/planfftw/tarball/%s" % __version__,
+      classifiers=[
+          'Development Status :: 4 - Beta',
+          'Intended Audience :: Science/Research',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: GNU General Public Lic    ense (GPL)',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
+          'Topic :: Utilities'],
+      install_requires=["numpy"],
+      extras_require={"speed": ["pyfftw"],
+                      "dev": ["pytest", "tox", "scipy", "pyfftw"]},
+      tests_require=["pytest"],
+      keywords=["pyfftw", "fft", "fftw", "plan", "planner"])
 

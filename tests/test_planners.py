@@ -1,9 +1,14 @@
 #!usr/bin/env python
 import numpy as np
+import pytest
 
-from planfftw import (firfilter, correlate, convolve)
-# noinspection PyProtectedMember
-from planfftw._utils import pad_array
+from planfftw import (firfilter,
+                      firfilter_const_filter,
+                      firfilter_const_signal,
+                      correlate,
+                      convolve,
+                      convolve_const_x,
+                      convolve_const_y)
 
 from numpy.testing import assert_array_almost_equal
 
@@ -15,55 +20,106 @@ class TestFirFilter:
                     -0.7, -0.3, 0.1, -0.2, 0.3],
                    [0.7, 1.1, -0.2, -0.3, 0.1, 0.2,
                     -0.2, -0.7, 1.2, 1.0, 0.8]])
-    x3 = np.array([[[1.2, 0.4, -0.1, 1.2, 1.1, 0.9,
-                     -0.7, -0.3, 0.1, -0.2, 0.3],
-                    [0.7, 1.1, -0.2, -0.3, 0.1, 0.2,
-                     -0.2, -0.7, 1.2, 1.0, 0.8]],
-                   [[0.7, 1.1, -0.2, -0.3, 0.1, 0.2,
-                     -0.2, -0.7, 1.2, 1.0, 0.8],
-                    [1.2, 0.4, -0.1, 1.2, 1.1, 0.9,
-                     -0.7, -0.3, 0.1, -0.2, 0.3]]])
+    x3 = np.array([[[1.2, 0.7],
+                    [0.4, 1.1],
+                    [-0.1, -0.2],
+                    [1.2, -0.3],
+                    [1.1, 0.1],
+                    [0.9, 0.2],
+                    [-0.7, -0.2],
+                    [-0.3, -0.7],
+                    [0.1, 1.2],
+                    [-0.2, 1.0],
+                    [0.3, 0.8]],
+                   [[0.7, 1.2],
+                    [1.1, 0.4],
+                    [-0.2, -0.1],
+                    [-0.3, 1.2],
+                    [0.1, 1.1],
+                    [0.2, 0.9],
+                    [-0.2, -0.7],
+                    [-0.7, -0.3],
+                    [1.2, 0.1],
+                    [1.0, -0.2],
+                    [0.3, 0.8]]])
 
     xfb = np.array([0., 1.2, -2., -0.9, 1.4, -1.3, -1.3, -2.5, 1.1, 0.7, -0.4])
     x2fb = np.array([[0., 1.2, -2., -0.9, 1.4, -1.3,
                       -1.3, -2.5, 1.1, 0.7, -0.4],
                      [0., 0.7, -0.3, -2.4, 0.1, 0.7,
                       0., -0.6, -0.3, 2.6, -1.4]])
+    x3fb = np.array([[[0., 0.],
+                      [1.2, 0.7],
+                      [-2., -0.3],
+                      [-0.9, -2.4],
+                      [1.4, 0.1],
+                      [-1.3, 0.7],
+                      [-1.3, 0.],
+                      [-2.5, -0.6],
+                      [1.1, -0.3],
+                      [0.7, 2.6],
+                      [-0.4, -1.4]],
+                     [[0., 0.],
+                      [0.7, 1.2],
+                      [-0.3, -2.],
+                      [-2.4, -0.9],
+                      [0.1, 1.4],
+                      [0.7, -1.3],
+                      [0., -1.3],
+                      [-0.6, -2.5],
+                      [-0.3, 1.1],
+                      [2.6, 0.7],
+                      [-1.4, -0.4]]])
 
     def test_firfilter_1d_input(self):
         my_firfilter = firfilter(self.b, self.x)
         assert_array_almost_equal(my_firfilter(self.b, self.x), self.xfb)
 
+    def test_firfilter_1d_input_filter_length(self):
+        my_firfilter = firfilter(len(self.b), self.x)
+        assert_array_almost_equal(my_firfilter(self.b, self.x), self.xfb)
+
+    def test_firfilter_1d_input_signal_length(self):
+        my_firfilter = firfilter(self.b, len(self.x))
+        assert_array_almost_equal(my_firfilter(self.b, self.x), self.xfb)
+
+    def test_firfilter_1d_input_filter_length_error(self):
+        my_firfilter = firfilter(len(self.b) + 2, self.x)
+        with pytest.raises(ValueError):
+          assert_array_almost_equal(my_firfilter(self.b, self.x), self.xfb)
+
+    def test_firfilter_1d_input_signal_length_error(self):
+        my_firfilter = firfilter(self.b, len(self.x) + 2)
+        with pytest.raises(ValueError):
+            assert_array_almost_equal(my_firfilter(self.b, self.x), self.xfb)
+
     def test_firfilter_1d_input_x_constant(self):
-        my_firfilter = firfilter(self.b, self.x, constant_signal=True)
+        my_firfilter = firfilter_const_signal(self.b, self.x)
         assert_array_almost_equal(my_firfilter(self.b), self.xfb)
 
     def test_firfilter_1d_input_b_constant(self):
-        my_firfilter = firfilter(self.b, self.x, constant_filter=True)
+        my_firfilter = firfilter_const_filter(self.b, self.x)
         assert_array_almost_equal(my_firfilter(self.x), self.xfb)
 
-    def test_firfilter_2d_input(self):
+    def test_firfilter_2d_input_default_axis(self):
         my_firfilter = firfilter(self.b, self.x2)
         assert_array_almost_equal(my_firfilter(self.b, self.x2), self.x2fb)
 
+    def test_firfilter_2d_input_alternative_axis(self):
+        my_firfilter = firfilter(self.b, self.x2.T, axis=0)
+        assert_array_almost_equal(my_firfilter(self.b, self.x2.T), self.x2fb.T)
+
     def test_firfilter_2d_input_x_constant(self):
-        my_firfilter = firfilter(self.b, self.x2, constant_signal=True)
+        my_firfilter = firfilter_const_signal(self.b, self.x2)
         assert_array_almost_equal(my_firfilter(self.b), self.x2fb)
 
     def test_firfilter_2d_input_b_constant(self):
-        my_firfilter = firfilter(self.b, self.x2, constant_filter=True)
+        my_firfilter = firfilter_const_filter(self.b, self.x2)
         assert_array_almost_equal(my_firfilter(self.x2), self.x2fb)
 
-    def test_firfilter_1d_segments(self):
-        my_firfilter = firfilter(self.b, self.x2, x_segmented=True)
-        assert_array_almost_equal(my_firfilter(self.b, 0), self.x2fb[0])
-        assert_array_almost_equal(my_firfilter(self.b, 1), self.x2fb[1])
-
-    def test_firfilter_2d_segments(self):
-        my_firfilter = firfilter(self.b, self.x3, x_segmented=True)
-        assert_array_almost_equal(my_firfilter(self.b, 0), self.x2fb)
-        assert_array_almost_equal(my_firfilter(self.b, 1),
-                                  self.x2fb[::-1, :])
+    def test_firfilter_3d_input_alternative_axis(self):
+        my_firfilter = firfilter(self.b, self.x3, axis=1)
+        assert_array_almost_equal(my_firfilter(self.b, self.x3), self.x3fb)
 
 
 class TestCorrelate:
@@ -141,9 +197,9 @@ class TestConvolve:
                                   self.cxy[4:7])
 
     def test_convolve_1d_x_constant(self):
-        my_convolve_1 = convolve(self.x, self.y, constant_x=True)
-        my_convolve_2 = convolve(self.x, self.y, 'same', constant_x=True)
-        my_convolve_3 = convolve(self.x, self.y, 'valid', constant_x=True)
+        my_convolve_1 = convolve_const_x(self.x, self.y)
+        my_convolve_2 = convolve_const_x(self.x, self.y, 'same')
+        my_convolve_3 = convolve_const_x(self.x, self.y, 'valid')
         assert_array_almost_equal(my_convolve_1(self.y),
                                   self.cxy)
         assert_array_almost_equal(my_convolve_2(self.y),
@@ -152,9 +208,9 @@ class TestConvolve:
                                   self.cxy[4:7])
 
     def test_convolve_1d_y_constant(self):
-        my_convolve_1 = convolve(self.x, self.y, constant_y=True)
-        my_convolve_2 = convolve(self.x, self.y, 'same', constant_y=True)
-        my_convolve_3 = convolve(self.x, self.y, 'valid', constant_y=True)
+        my_convolve_1 = convolve_const_y(self.x, self.y)
+        my_convolve_2 = convolve_const_y(self.x, self.y, 'same')
+        my_convolve_3 = convolve_const_y(self.x, self.y, 'valid')
         assert_array_almost_equal(my_convolve_1(self.x),
                                   self.cxy)
         assert_array_almost_equal(my_convolve_2(self.x),
@@ -163,9 +219,9 @@ class TestConvolve:
                                   self.cxy[4:7])
 
     def test_convolve_single_2d(self):
-        my_convolve_1 = convolve(self.x2, self.y2, axes=-1)
-        my_convolve_2 = convolve(self.x2, self.y2, 'same', axes=-1)
-        my_convolve_3 = convolve(self.x2, self.y2, 'valid', axes=-1)
+        my_convolve_1 = convolve(self.x2, self.y2, axis=-1)
+        my_convolve_2 = convolve(self.x2, self.y2, 'same', axis=-1)
+        my_convolve_3 = convolve(self.x2, self.y2, 'valid', axis=-1)
         assert_array_almost_equal(my_convolve_1(self.x2, self.y2),
                                   self.cx2y2)
         assert_array_almost_equal(my_convolve_2(self.x2, self.y2),
@@ -174,33 +230,17 @@ class TestConvolve:
                                   self.cx2y2[:, 4:7])
 
     def test_convolve_single_2d_x_constant(self):
-        my_convolve_1 = convolve(self.x2, self.y2, axes=-1, constant_x=True)
-        my_convolve_2 = convolve(self.x2,
-                                 self.y2,
-                                 'same',
-                                 axes=-1,
-                                 constant_x=True)
-        my_convolve_3 = convolve(self.x2,
-                                 self.y2,
-                                 'valid',
-                                 axes=-1,
-                                 constant_x=True)
+        my_convolve_1 = convolve_const_x(self.x2, self.y2, axis=-1)
+        my_convolve_2 = convolve_const_x(self.x2, self.y2, 'same', axis=-1)
+        my_convolve_3 = convolve_const_x(self.x2, self.y2, 'valid', axis=-1)
         assert_array_almost_equal(my_convolve_1(self.y2), self.cx2y2)
         assert_array_almost_equal(my_convolve_2(self.y2), self.cx2y2[:, 2:9])
         assert_array_almost_equal(my_convolve_3(self.y2), self.cx2y2[:, 4:7])
 
     def test_convolve_single_2d_y_constant(self):
-        my_convolve_1 = convolve(self.x2, self.y2, axes=-1, constant_y=True)
-        my_convolve_2 = convolve(self.x2,
-                                 self.y2,
-                                 'same',
-                                 axes=-1,
-                                 constant_y=True)
-        my_convolve_3 = convolve(self.x2,
-                                 self.y2,
-                                 'valid',
-                                 axes=-1,
-                                 constant_y=True)
+        my_convolve_1 = convolve_const_y(self.x2, self.y2, axis=-1)
+        my_convolve_2 = convolve_const_y(self.x2, self.y2, 'same', axis=-1)
+        my_convolve_3 = convolve_const_y(self.x2, self.y2, 'valid', axis=-1)
         assert_array_almost_equal(my_convolve_1(self.x2), self.cx2y2)
         assert_array_almost_equal(my_convolve_2(self.x2), self.cx2y2[:, 2:9])
         assert_array_almost_equal(my_convolve_3(self.x2), self.cx2y2[:, 4:7])
@@ -216,17 +256,17 @@ class TestConvolve:
                                   self.cx3y3[2:5, 3:5])
 
     def test_convolve_multiple_2d_x_constant(self):
-        my_convolve_1 = convolve(self.x3, self.y3, constant_x=True)
-        my_convolve_2 = convolve(self.x3, self.y3, 'same', constant_x=True)
-        my_convolve_3 = convolve(self.x3, self.y3, 'valid', constant_x=True)
+        my_convolve_1 = convolve_const_x(self.x3, self.y3)
+        my_convolve_2 = convolve_const_x(self.x3, self.y3, 'same',)
+        my_convolve_3 = convolve_const_x(self.x3, self.y3, 'valid')
         assert_array_almost_equal(my_convolve_1(self.y3), self.cx3y3)
         assert_array_almost_equal(my_convolve_2(self.y3), self.cx3y3[1:6, 1:6])
         assert_array_almost_equal(my_convolve_3(self.y3), self.cx3y3[2:5, 3:5])
 
     def test_convolve_multiple_2d_y_constant(self):
-        my_convolve_1 = convolve(self.x3, self.y3, constant_y=True)
-        my_convolve_2 = convolve(self.x3, self.y3, 'same', constant_y=True)
-        my_convolve_3 = convolve(self.x3, self.y3, 'valid', constant_y=True)
+        my_convolve_1 = convolve_const_y(self.x3, self.y3)
+        my_convolve_2 = convolve_const_y(self.x3, self.y3, 'same')
+        my_convolve_3 = convolve_const_y(self.x3, self.y3, 'valid')
         assert_array_almost_equal(my_convolve_1(self.x3), self.cx3y3)
         assert_array_almost_equal(my_convolve_2(self.x3), self.cx3y3[1:6, 1:6])
         assert_array_almost_equal(my_convolve_3(self.x3), self.cx3y3[2:5, 3:5])
@@ -238,18 +278,3 @@ class TestConvolve:
     def test_convolve_1d_single_2d(self):
         my_convolve_1 = convolve(self.x, self.y2)
         assert_array_almost_equal(my_convolve_1(self.x, self.y2), self.cxy2)
-
-    def test_convolve_1d_segments_1d(self):
-        my_convolve_1 = convolve(self.x2, self.y, x_segmented=True)
-        assert_array_almost_equal(my_convolve_1(0, self.y), self.cx2y[0])
-        assert_array_almost_equal(my_convolve_1(1, self.y), self.cx2y[1])
-
-    def test_convolve_2d_segments_2d(self):
-        xs = np.array([self.x3, self.x3])
-        my_convolve_1 = convolve(xs, self.y3, x_segmented=True)
-        assert_array_almost_equal(my_convolve_1(0, self.y3), self.cx3y3)
-
-    def test_convolve_single_2d_segments_1d(self):
-        xs = np.array([self.x2, self.x2])
-        my_convolve_1 = convolve(xs, self.y, x_segmented=True)
-        assert_array_almost_equal(my_convolve_1(0, self.y), self.cx2y)

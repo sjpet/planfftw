@@ -1,7 +1,14 @@
 #!usr/bin/env python
 """A set of utility functions for the planners.
 """
+
+from typing import Tuple
+
 import numpy as np
+
+
+def id(x):
+    return x
 
 
 def is_shape(s):
@@ -18,7 +25,7 @@ def is_shape(s):
     return True
 
 
-def get_shape(a):
+def get_shape(a) -> Tuple[int]:
     # If it's already a shape, just return it
     if is_shape(a):
         return a
@@ -49,7 +56,7 @@ def get_segment_axis(shape, axis, s_axis):
         return axis
 
 
-def compute_nfft(n_filter, n_signal):
+def compute_filter_nfft(n_filter, n_signal):
     # Verify that n_filter and n_signal are positive numbers
     n_ok = type(n_filter) in (int, float) and n_filter > 0
     n_x_ok = type(n_signal) in (int, float) and n_signal > 0
@@ -105,16 +112,17 @@ def scipy_rfft_to_complex(a, axis=-1):
     slices[axis] = slice(1, None, 2)
 
     # take real part
-    a_complex = np.concatenate((a[slices_0], a[slices]), axis=axis) + 0j
+    a_complex = np.concatenate((a[tuple(slices_0)],
+                                a[tuple(slices)]), axis=axis) + 0j
 
     # change slices and add complex part
     slices[axis] = slice(2, None, 2)
     if odd:
         slices_0[axis] = slice(1, None)
-        a_complex[slices_0] += 1j*a[slices]
+        a_complex[tuple(slices_0)] += 1j*a[tuple(slices)]
     else:
         slices_0[axis] = slice(1, -1)
-        a_complex[slices_0] += 1j*a[slices]
+        a_complex[tuple(slices_0)] += 1j*a[tuple(slices)]
 
     return a_complex
 
@@ -141,13 +149,19 @@ def complex_to_scipy_rfft(a_complex, axis=-1, even=None):
     ac = a_complex.imag
 
     # Fill the output
-    a_sfft[slices_0] = ar[slices_0]
+    a_sfft[tuple(slices_0)] = ar[tuple(slices_0)]
     slices_0[axis] = slice(1, None, 2)
     slices[axis] = slice(1, None)
-    a_sfft[slices_0] = ar[slices]
+    a_sfft[tuple(slices_0)] = ar[tuple(slices)]
     slices_0[axis] = slice(2, None, 2)
     slices[axis] = slice(1, n - even)
-    a_sfft[slices_0] = ac[slices]
+    a_sfft[tuple(slices_0)] = ac[tuple(slices)]
 
     return a_sfft
 
+
+def replace(xs, k, v):
+    """Replace the element with index `k` in `xs` with `v`"""
+    xs_ = list(xs)
+    xs_[k] = v
+    return xs_
