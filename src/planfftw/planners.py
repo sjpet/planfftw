@@ -14,11 +14,15 @@ try:
 except ImportError:
     try:
         import scipy.fftpack as _
-        from ._scipy_basics import (fft, rfft, fftn, rfftn,
-                                    ifft, irfft, ifftn, irfftn)
+        from ._scipy_basics import (fft, fft_pair, rfft, rfft_pair,
+                                    fftn, fftn_pair, rfftn, rfftn_pair,
+                                    ifft, ifft_pair, irfft, irfft_pair,
+                                    ifftn, ifftn_pair, irfftn, irfftn_pair)
     except ImportError:
-        from ._numpy_basics import (fft, rfft, fftn, rfftn,
-                                    ifft, irfft, ifftn, irfftn)
+        from ._numpy_basics import (fft, fft_pair, rfft, rfft_pair,
+                                    fftn, fftn_pair, rfftn, rfftn_pair,
+                                    ifft, ifft_pair, irfft, irfft_pair,
+                                    ifftn, ifftn_pair, irfftn, irfftn_pair)
 
 
 # ### Hidden functions
@@ -157,13 +161,17 @@ def _convolve_or_correlate(plan_x,
 
     Returns
     -------
-        function
-            Planned convolution or correlation function.
+    planned_function(x_transformed, y_transformed)
+        Planned convolution or correlation function.
+    planned_x_transform_function(x)
+        Planned transform function for x
+    planned_y_transform_function(y)
+        Planned transform function for y
 
     Raises
     ------
-        ValueError
-            If no function can be planned for the given arguments.
+    ValueError
+        If no function can be planned for the given arguments.
     """
 
     # Get dimensions
@@ -223,12 +231,11 @@ def firfilter2(filter_coefficients, signal, axis=-1):
         The axis of `signal` along which the filter shall be applied
 
     Returns
-    -------
-    Callable
+    planned_filter(b_transformed, x_transformed)
         The filtering function
-    Callable
+    b_transform_function(b)
         The filter transform function
-    Callable
+    x_transform_function(x)
         The signal transform function
 
     See also
@@ -299,22 +306,22 @@ def firfilter(plan_b, plan_x, axis=-1):
 
     Parameters
     ----------
-        plan_b : integer, shape or array-like
-            A filter vector or its length or shape
-        plan_x : integer, shape or array-like
-            A signal vector or its length or shape
-        axis : optional[int]
-            Axis in plan_x along which the filter is applied
+    plan_b : integer, shape or array-like
+        A filter vector or its length or shape
+    plan_x : integer, shape or array-like
+        A signal vector or its length or shape
+    axis : optional[int]
+        Axis in plan_x along which the filter is applied
 
     Returns
     -------
-        function
-            A planned FIR-filtering function.
+    planned_filter(b, x)
+        The filtering function
 
     Raises
     ------
-        ValueError
-            If filter has more than one dimensions.
+    ValueError
+        If filter has more than one dimensions.
     """
 
     (filter_function,
@@ -334,22 +341,22 @@ def firfilter_const_filter(b, plan_x, axis=-1):
 
     Parameters
     ----------
-        b : array-like
-            A filter vector
-        plan_x : integer, shape or array-like
-            A signal vector or its length or shape
-        axis : optional[int]
-            Axis in plan_x along which the filter is applied
+    b : array-like
+        A filter vector
+    plan_x : integer, shape or array-like
+        A signal vector or its length or shape
+    axis : optional[int]
+        Axis in plan_x along which the filter is applied
 
     Returns
     -------
-        function
-            A planned FIR-filtering function.
+    planned_firfilter(x)
+        The planned FIR-filtering function.
 
     Raises
     ------
-        ValueError
-            If filter has more than one dimensions.
+    ValueError
+        If filter has more than one dimensions.
     """
 
     (filter_function,
@@ -370,22 +377,22 @@ def firfilter_const_signal(plan_b, x, axis=-1):
 
     Parameters
     ----------
-        plan_b : integer, shape or array-like
-            A filter vector or its length or shape
-        x : Array-like
-            A signal vector or array
-        axis : optional[int]
-            Axis in plan_x along which the filter is applied
+    plan_b : integer, shape or array-like
+        A filter vector or its length or shape
+    x : Array-like
+        A signal vector or array
+    axis : optional[int]
+        Axis in plan_x along which the filter is applied
 
     Returns
     -------
-        function
-            A planned FIR-filtering function.
+    planned_firfilter(b)
+        The planned FIR-filtering function.
 
     Raises
     ------
-        ValueError
-            If filter has more than one dimensions.
+    ValueError
+        If filter has more than one dimensions.
     """
 
     (filter_function,
@@ -445,8 +452,12 @@ def convolve2(plan_x, plan_y, mode='full', axis=None):
 
     Returns
     -------
-    function
+    planned_convolve(x_transformed, y_transformed)
         Planned convolution function.
+    x_transform_function(x)
+        Planned transform function for first sequence
+    y_transform_function(y)
+        Planned transform function for second sequence
 
     Raises
     ------
@@ -499,7 +510,7 @@ def convolve(plan_x, plan_y, mode='full', axis=None):
 
     Returns
     -------
-    function
+    planned_convolve(x, y)
         Planned convolution function.
 
     Raises
@@ -519,8 +530,7 @@ def convolve(plan_x, plan_y, mode='full', axis=None):
 
 
 def convolve_const_x(x, plan_y, mode='full', axis=None):
-    """Returns a planned function for computing the convolution of two
-    sequences or arrays.
+    """Plan a function for convolving a constant array with another array.
 
     This planner distinguishes between several different cases:
 
@@ -558,7 +568,7 @@ def convolve_const_x(x, plan_y, mode='full', axis=None):
 
     Returns
     -------
-    function
+    planned_convolve(y)
         Planned convolution function.
 
     Raises
@@ -578,8 +588,7 @@ def convolve_const_x(x, plan_y, mode='full', axis=None):
 
 
 def convolve_const_y(plan_x, y, mode='full', axis=None):
-    """Returns a planned function for computing the convolution of two
-    sequences or arrays.
+    """Plan a function for convolving an array with another constant array.
 
     This planner distinguishes between several different cases:
 
@@ -617,7 +626,7 @@ def convolve_const_y(plan_x, y, mode='full', axis=None):
 
     Returns
     -------
-    function
+    planned_convolve(x)
         Planned convolution function.
 
     Raises
@@ -637,6 +646,62 @@ def convolve_const_y(plan_x, y, mode='full', axis=None):
 
 
 def correlate2(plan_x, plan_y, mode='full', axis=None):
+    """Plan a function for correlating two arrays.
+
+    The planned function is returned along with separate input transform
+    functions. This is intended for more advanced use cases, such as when
+    precise control of transforms is required for memoization or other
+    reasons. For most use cases, `correlate`, `correlate_const_x` or
+    `correlate_const_y` are more appropriate.
+
+    This planner distinguishes between several different cases:
+
+        1. 1-D correlation of 1-D sequences or along single axis in N-D arrays
+        2. N-D correlation of N-D sequences
+        3. 1-D correlation along single axis in N-D array with 1-D sequence
+        4. 1-D correlation of 1-D sequence along single axis in N-D array
+
+        The shapes of the two inputs are usually sufficient to determine which
+        case should be used. However, to get 1-D correlation along single axis
+        in N-D arrays, 'axes' must be a single integer or a length 1 sequence.
+
+    Parameters
+    ----------
+    plan_x : integer, shape or array-like
+        First input sequence, it's shape or length.
+    plan_y : integer, shape or array-like
+        Second input sequence, it's shape or length.
+    mode : Optional[str]
+        A string indicating the output size.
+
+        'full'
+            The output is the full discrete linear correlation of the
+            inputs. (Default)
+        'valid'
+            The output consists only of those elements that do not rely on
+            zero-padding.
+        'same'
+            The output is the same size as plan_x, centered with respect to
+            the 'full' output.
+    axis : Optional[int or sequence of ints]
+        The axis or axes along which the correlation is computed.
+        Default is the last N axes of the highest-rank input where N is the
+        rank of the lowest-rank input.
+
+    Returns
+    -------
+    planned_correlate(x_transformed, y_transformed)
+        Planned correlation function
+    x_transform_function(x)
+        Planned transform function for the first array
+    y_transform_function(y)
+        Planned transform function for the second array
+
+    Raises
+    ------
+    ValueError
+        If no function can be planned for the given arguments.
+    """
     return _convolve_or_correlate(plan_x,
                                   plan_y,
                                   mode=mode,
@@ -645,52 +710,51 @@ def correlate2(plan_x, plan_y, mode='full', axis=None):
 
 
 def correlate(plan_x, plan_y, mode='full', axis=None):
-    """Returns a planned function for computing the convolution of two
-    sequences or arrays.
+    """Plan a function for correlating two arrays.
 
     This planner distinguishes between several different cases:
 
-        1. 1-D convolution of 1-D sequences or along single axis in N-D arrays
-        2. N-D convolution of N-D sequences
-        3. 1-D convolution along single axis in N-D array with 1-D sequence
-        4. 1-D convolution of 1-D sequence along single axis in N-D array
+        1. 1-D correlation of 1-D sequences or along single axis in N-D arrays
+        2. N-D correlation of N-D sequences
+        3. 1-D correlation along single axis in N-D array with 1-D sequence
+        4. 1-D correlation of 1-D sequence along single axis in N-D array
 
         The shapes of the two inputs are usually sufficient to determine which
-        case should be used. However, to get 1-D convolution along single axis
+        case should be used. However, to get 1-D correlation along single axis
         in N-D arrays, 'axes' must be a single integer or a length 1 sequence.
 
     Parameters
     ----------
-        plan_x : integer, shape or array-like
-            First input sequence, it's shape or length.
-        plan_y : integer, shape or array-like
-            Second input sequence, it's shape or length.
-        mode : Optional[str]
-            A string indicating the output size.
+    plan_x : integer, shape or array-like
+        First input sequence, it's shape or length.
+    plan_y : integer, shape or array-like
+        Second input sequence, it's shape or length.
+    mode : Optional[str]
+        A string indicating the output size.
 
-            'full'
-                The output is the full discrete linear convolution of the
-                inputs. (Default)
-            'valid'
-                The output consists only of those elements that do not rely on
-                zero-padding.
-            'same'
-                The output is the same size as plan_x, centered with respect to
-                the 'full' output.
-        axis : Optional[int or sequence of ints]
-            The axis or axes along which the convolution is computed.
-            Default is the last N axes of the highest-rank input where N is the
-            rank of the lowest-rank input.
+        'full'
+            The output is the full discrete linear correlation of the
+            inputs. (Default)
+        'valid'
+            The output consists only of those elements that do not rely on
+            zero-padding.
+        'same'
+            The output is the same size as plan_x, centered with respect to
+            the 'full' output.
+    axis : Optional[int or sequence of ints]
+        The axis or axes along which the correlation is computed.
+        Default is the last N axes of the highest-rank input where N is the
+        rank of the lowest-rank input.
 
     Returns
     -------
-        function
-            Planned convolution function.
+    planned_correlate(x, y)
+        Planned correlation function.
 
     Raises
     ------
-        ValueError
-            If no function can be planned for the given arguments.
+    ValueError
+        If no function can be planned for the given arguments.
     """
 
     planned_function, x_transform_function, y_transform_function = \
@@ -704,52 +768,51 @@ def correlate(plan_x, plan_y, mode='full', axis=None):
 
 
 def correlate_const_x(x, plan_y, mode='full', axis=None):
-    """Returns a planned function for computing the convolution of two
-    sequences or arrays.
+    """Plan a function for correlating a constant array with another array.
 
     This planner distinguishes between several different cases:
 
-        1. 1-D convolution of 1-D sequences or along single axis in N-D arrays
-        2. N-D convolution of N-D sequences
-        3. 1-D convolution along single axis in N-D array with 1-D sequence
-        4. 1-D convolution of 1-D sequence along single axis in N-D array
+        1. 1-D correlation of 1-D sequences or along single axis in N-D arrays
+        2. N-D correlation of N-D sequences
+        3. 1-D correlation along single axis in N-D array with 1-D sequence
+        4. 1-D correlation of 1-D sequence along single axis in N-D array
 
         The shapes of the two inputs are usually sufficient to determine which
-        case should be used. However, to get 1-D convolution along single axis
+        case should be used. However, to get 1-D correlation along single axis
         in N-D arrays, 'axes' must be a single integer or a length 1 sequence.
 
     Parameters
     ----------
-        x: Array-like
-            First input (constant)
-        plan_y: integer, shape or array-like
-            Second input or it's shape or length.
-        mode: Optional[str]
-            A string indicating the output size.
+    x: Array-like
+        First input (constant)
+    plan_y: integer, shape or array-like
+        Second input or it's shape or length.
+    mode: Optional[str]
+        A string indicating the output size.
 
-            'full'
-                The output is the full discrete linear convolution of the
-                inputs. (Default)
-            'valid'
-                The output consists only of those elements that do not rely on
-                zero-padding.
-            'same'
-                The output is the same size as plan_x, centered with respect to
-                the 'full' output.
-        axis: Optional[int or sequence of ints]
-            The axis or axes along which the convolution is computed.
-            Default is the last N axes of the highest-rank input where N is the
-            rank of the lowest-rank input.
+        'full'
+            The output is the full discrete linear correlation of the
+            inputs. (Default)
+        'valid'
+            The output consists only of those elements that do not rely on
+            zero-padding.
+        'same'
+            The output is the same size as plan_x, centered with respect to
+            the 'full' output.
+    axis: Optional[int or sequence of ints]
+        The axis or axes along which the correlation is computed.
+        Default is the last N axes of the highest-rank input where N is the
+        rank of the lowest-rank input.
 
     Returns
     -------
-        function
-            Planned convolution function.
+    planned_correlate(y)
+        Planned correlation function.
 
     Raises
     ------
-        ValueError
-            If no function can be planned for the given arguments.
+    ValueError
+        If no function can be planned for the given arguments.
     """
 
     planned_function, x_transform_function, y_transform_function = \
@@ -763,52 +826,51 @@ def correlate_const_x(x, plan_y, mode='full', axis=None):
 
 
 def correlate_const_y(plan_x, y, mode='full', axis=None):
-    """Returns a planned function for computing the convolution of two
-    sequences or arrays.
+    """Plan a function for correlating an array with another constant array.
 
     This planner distinguishes between several different cases:
 
-        1. 1-D convolution of 1-D sequences or along single axis in N-D arrays
-        2. N-D convolution of N-D sequences
-        3. 1-D convolution along single axis in N-D array with 1-D sequence
-        4. 1-D convolution of 1-D sequence along single axis in N-D array
+        1. 1-D correlation of 1-D sequences or along single axis in N-D arrays
+        2. N-D correlation of N-D sequences
+        3. 1-D correlation along single axis in N-D array with 1-D sequence
+        4. 1-D correlation of 1-D sequence along single axis in N-D array
 
         The shapes of the two inputs are usually sufficient to determine which
-        case should be used. However, to get 1-D convolution along single axis
+        case should be used. However, to get 1-D correlation along single axis
         in N-D arrays, 'axes' must be a single integer or a length 1 sequence.
 
     Parameters
     ----------
-        plan_x: integer, shape or Array-like
-            First input or it's shape or length.
-        y: Array-like
-            Second input (constant)
-        mode: Optional[str]
-            A string indicating the output size.
+    x: Array-like
+        First input (constant)
+    plan_y: integer, shape or array-like
+        Second input or it's shape or length.
+    mode: Optional[str]
+        A string indicating the output size.
 
-            'full'
-                The output is the full discrete linear convolution of the
-                inputs. (Default)
-            'valid'
-                The output consists only of those elements that do not rely on
-                zero-padding.
-            'same'
-                The output is the same size as plan_x, centered with respect to
-                the 'full' output.
-        axis: Optional[int or sequence of ints]
-            The axis or axes along which the convolution is computed.
-            Default is the last N axes of the highest-rank input where N is the
-            rank of the lowest-rank input.
+        'full'
+            The output is the full discrete linear correlation of the
+            inputs. (Default)
+        'valid'
+            The output consists only of those elements that do not rely on
+            zero-padding.
+        'same'
+            The output is the same size as plan_x, centered with respect to
+            the 'full' output.
+    axis: Optional[int or sequence of ints]
+        The axis or axes along which the correlation is computed.
+        Default is the last N axes of the highest-rank input where N is the
+        rank of the lowest-rank input.
 
     Returns
     -------
-        function
-            Planned convolution function.
+    planned_correlate(x)
+        Planned correlation function.
 
     Raises
     ------
-        ValueError
-            If no function can be planned for the given arguments.
+    ValueError
+        If no function can be planned for the given arguments.
     """
 
     planned_function, x_transform_function, y_transform_function = \

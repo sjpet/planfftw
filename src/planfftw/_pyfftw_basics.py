@@ -310,7 +310,7 @@ def fft_pair(a, nfft=None, axis=-1, crop_ifft=False):
     planned_fft(x)
         Planned fft function.
     planned_ifft(x)
-        Planned ifft function. Returned if fft_pair is True.
+        Planned ifft function.
     """
     shape, u, v, n, nfft = _fft_preparations(a, nfft, axis)
     fft_obj = pyfftw.FFTW(u, v, direction='FFTW_FORWARD', axes=(axis,))
@@ -366,17 +366,17 @@ def rfft(a, nfft=None, axis=-1):
 
     Parameters
     ----------
-        a : number, shape or array-like
-            An input array, its shape or length.
-        nfft : Optional[int]
-            Number of FFT points. Default is input size along specified axis
-        axis : Optional[int]
-            Axis along which to perform the fft. Default is -1.
+    a : number, shape or array-like
+        An input array, its shape or length.
+    nfft : Optional[int]
+        Number of FFT points. Default is input size along specified axis
+    axis : Optional[int]
+        Axis along which to perform the fft. Default is -1.
 
     Returns
     -------
-        planned_rfft(x)
-            Planned fft function.
+    planned_rfft(x)
+        Planned fft function.
     """
     shape, u, v, n, nfft = _fft_preparations(a, nfft, axis, real_valued=True)
 
@@ -412,22 +412,22 @@ def rfft_pair(a, nfft=None, axis=-1, crop_ifft=False):
 
     Parameters
     ----------
-        a : number, shape or array-like
-            An input array, its shape or length.
-        nfft : Optional[int]
-            Number of FFT points. Default is input size along specified axis
-        axis : Optional[int]
-            Axis along which to perform the fft. Default is -1.
-        crop_ifft : Optional[boolean]
-            Indicates whether the planned ifft function should crop its
-            output to match input size. Default is False.
+    a : number, shape or array-like
+        An input array, its shape or length.
+    nfft : Optional[int]
+        Number of FFT points. Default is input size along specified axis
+    axis : Optional[int]
+        Axis along which to perform the fft. Default is -1.
+    crop_ifft : Optional[boolean]
+        Indicates whether the planned ifft function should crop its
+        output to match input size. Default is False.
 
     Returns
     -------
-        planned_rfft(x)
-            Planned fft function
-        planned_irfft(x)
-            Planned ifft function
+    planned_rfft(x)
+        Planned fft function
+    planned_irfft(x)
+        Planned ifft function
     """
     shape, u, v, n, nfft = _fft_preparations(a, nfft, axis, real_valued=True)
 
@@ -484,17 +484,17 @@ def fftn(a, shape=None, axes=None):
 
     Parameters
     ----------
-        a : array-like or shape
-            An input array or its shape
-        shape : Optional[List[int]]
-            Number of FFT points. Default is input size along specified axes
-        axes : Optional[sequence of ints]
-            Axes along which to perform the fft. Default is all axes.
+    a : array-like or shape
+        An input array or its shape
+    shape : Optional[List[int]]
+        Number of FFT points. Default is input size along specified axes
+    axes : Optional[sequence of ints]
+        Axes along which to perform the fft. Default is all axes.
 
     Returns
     -------
-        planned_fftn(x)
-            Planned fft function.
+    planned_fftn(x)
+        Planned fft function.
     """
     a_shape, axes, u, v, fft_shape = _fftn_preparations(a, shape, axes)
     n_dim = len(a_shape)
@@ -538,22 +538,22 @@ def fftn_pair(a, shape=None, axes=None, crop_ifft=False):
 
     Parameters
     ----------
-        a : array-like or shape
-            An input array or its shape
-        shape : Optional[List[int]]
-            Number of FFT points. Default is input size along specified axes
-        axes : Optional[sequence of ints]
-            Axes along which to perform the fft. Default is all axes.
-        crop_ifft : Optional[boolean]
-            Indicates whether the planned ifft function should crop its output
-            to match input size. Default is False.
+    a : array-like or shape
+        An input array or its shape
+    shape : Optional[List[int]]
+        Number of FFT points. Default is input size along specified axes
+    axes : Optional[sequence of ints]
+        Axes along which to perform the fft. Default is all axes.
+    crop_ifft : Optional[boolean]
+        Indicates whether the planned ifft function should crop its output
+        to match input size. Default is False.
 
     Returns
     -------
-        planned_fftn(x)
-            Planned fft function.
-        planned_ifftn(x)
-            Planned ifft function. Returned if fft_pair is True.
+    planned_fftn(x)
+        Planned fft function.
+    planned_ifftn(x)
+        Planned ifft function.
     """
     a_shape, axes, u, v, fft_shape = _fftn_preparations(a, shape, axes)
     n_dim = len(a_shape)
@@ -618,17 +618,17 @@ def rfftn(a, shape=None, axes=None):
 
     Parameters
     ----------
-        a : array-like or shape
-            An input array or its shape.
-        shape : Optional[sequence of ints]
-            Number of FFT points. Default is input size along specified axes
-        axes : Optional[sequence of ints]
-            Axes along which to perform the fft. Default is all axes.
+    a : array-like or shape
+        An input array or its shape.
+    shape : Optional[sequence of ints]
+        Number of FFT points. Default is input size along specified axes
+    axes : Optional[sequence of ints]
+        Axes along which to perform the fft. Default is all axes.
 
     Returns
     -------
-        planned_rfftn(x)
-            Planned fft function.
+    planned_rfftn(x)
+        Planned fft function.
     """
     a_shape, axes, u, v, fft_shape = \
         _fftn_preparations(a, shape, axes, real_valued=True)
@@ -672,22 +672,22 @@ def rfftn_pair(a, shape=None, axes=None, crop_ifft=False):
 
     Parameters
     ----------
-        a : array-like or shape
-            An input array or its shape.
-        shape : Optional[sequence of ints]
-            Number of FFT points. Default is input size along specified axes
-        axes : Optional[sequence of ints]
-            Axes along which to perform the fft. Default is all axes.
-        crop_ifft : Optional[boolean]
-            Indicates whether the planned ifft function should crop its output
-            to match input size. Default is False.
+    a : array-like or shape
+        An input array or its shape.
+    shape : Optional[sequence of ints]
+        Number of FFT points. Default is input size along specified axes
+    axes : Optional[sequence of ints]
+        Axes along which to perform the fft. Default is all axes.
+    crop_ifft : Optional[boolean]
+        Indicates whether the planned ifft function should crop its output
+        to match input size. Default is False.
 
     Returns
     -------
-        planned_rfftn(x)
-            Planned fft function.
-        planned_irfftn(x)
-            Planned ifft function. Returned if fft_pair is True.
+    planned_rfftn(x)
+        Planned fft function.
+    planned_irfftn(x)
+        Planned ifft function.
     """
     a_shape, axes, u, v, fft_shape = \
         _fftn_preparations(a, shape, axes, real_valued=True)
@@ -777,17 +777,17 @@ def ifft(a, nfft=None, axis=-1):
 
     Parameters
     ----------
-        a : number, shape or array-like
-            An input array, its shape or length.
-        nfft : Optional[int]
-            Number of FFT points. Default is input size along specified axis
-        axis : Optional[int]
-            Axis along which to perform the fft. Default is -1.
+    a : number, shape or array-like
+        An input array, its shape or length.
+    nfft : Optional[int]
+        Number of FFT points. Default is input size along specified axis
+    axis : Optional[int]
+        Axis along which to perform the fft. Default is -1.
 
     Returns
     -------
-        planned_ifft(x)
-            Planned ifft function.
+    planned_ifft(x)
+        Planned ifft function.
     """
     shape, n, nfft, u, v = _ifft_preparations(a, nfft, axis)
     return _ifft(n, nfft, u, v, shape, axis)
@@ -799,22 +799,22 @@ def ifft_pair(a, nfft=None, axis=-1, crop_fft=False):
 
     Parameters
     ----------
-        a : number, shape or array-like
-            An input array, its shape or length.
-        nfft : Optional[int]
-            Number of FFT points. Default is input size along specified axis
-        axis : Optional[int]
-            Axis along which to perform the fft. Default is -1.
-        crop_fft : Optional[boolean]
-            Indicates that the fft function should crop its output to match
-            the shape of the input to the ifft function
+    a : number, shape or array-like
+        An input array, its shape or length.
+    nfft : Optional[int]
+        Number of FFT points. Default is input size along specified axis
+    axis : Optional[int]
+        Axis along which to perform the fft. Default is -1.
+    crop_fft : Optional[boolean]
+        Indicates that the fft function should crop its output to match
+        the shape of the input to the ifft function
 
     Returns
     -------
-        planned_ifft(x)
-            Planned ifft function.
-        planned_fft(x)
-            Planned fft function. Returned if fft_pair is True.
+    planned_ifft(x)
+        Planned ifft function.
+    planned_fft(x)
+        Planned fft function.
     """
     shape, n, nfft, u, v = _ifft_preparations(a, nfft, axis)
     planned_ifft = _ifft(n, nfft, u, v, shape, axis)
@@ -847,17 +847,17 @@ def irfft(a, nfft=None, axis=-1):
 
     Parameters
     ----------
-        a : number, shape or array-like
-            An input array, its shape or length.
-        nfft : Optional[int]
-            Number of FFT points. Default is input size along specified axis
-        axis : Optional[int]
-            Axis along which to perform the fft. Default is -1.
+    a : number, shape or array-like
+        An input array, its shape or length.
+    nfft : Optional[int]
+        Number of FFT points. Default is input size along specified axis
+    axis : Optional[int]
+        Axis along which to perform the fft. Default is -1.
 
     Returns
     -------
-        planned_irfft(x)
-            Planned ifft function.
+    planned_irfft(x)
+        Planned ifft function.
     """
     v_shape, n, nfft, u, v = _ifft_preparations(a, nfft, axis, real_valued=True)
     return _ifft(n, nfft, u, v, v_shape, axis)
@@ -869,19 +869,19 @@ def irfft_pair(a, nfft=None, axis=-1):
 
     Parameters
     ----------
-        a : number, shape or array-like
-            An input array, its shape or length.
-        nfft : Optional[int]
-            Number of FFT points. Default is input size along specified axis
-        axis : Optional[int]
-            Axis along which to perform the fft. Default is -1.
+    a : number, shape or array-like
+        An input array, its shape or length.
+    nfft : Optional[int]
+        Number of FFT points. Default is input size along specified axis
+    axis : Optional[int]
+        Axis along which to perform the fft. Default is -1.
 
     Returns
     -------
-        planned_irfft(x)
-            Planned ifft function.
-        planned_rfft(x)
-            Planned fft function. Returned if fft_pair is True.
+    planned_irfft(x)
+        Planned ifft function.
+    planned_rfft(x)
+        Planned fft function.
     """
     v_shape, n, nfft, u, v = _ifft_preparations(a, nfft, axis, real_valued=True)
     planned_irfft = _ifft(n, nfft, u, v, v_shape, axis)
@@ -932,17 +932,17 @@ def ifftn(a, shape=None, axes=None):
 
     Parameters
     ----------
-        a : array-like or shape
-            An input array or its shape
-        nfft : Optional[sequence of ints]
-            Number of FFT points. Default is input size along specified axes
-        axes : Optional[sequence of ints]
-            Axes along which to perform the fft. Default is all axes.
+    a : array-like or shape
+        An input array or its shape
+    nfft : Optional[sequence of ints]
+        Number of FFT points. Default is input size along specified axes
+    axes : Optional[sequence of ints]
+        Axes along which to perform the fft. Default is all axes.
 
     Returns
     -------
-        planned_ifftn(x)
-            Planned fft function.
+    planned_ifftn(x)
+        Planned fft function.
     """
     a_shape, axes, u, v, fft_shape = \
         _fftn_preparations(a, shape, axes)
@@ -955,7 +955,8 @@ def ifftn(a, shape=None, axes=None):
     has_smaller_axis = any(s1 < s2 for s1, s2 in zip(a_shape, fft_shape))
     has_larger_axis = any(s1 > s2 for s1, s2 in zip(a_shape, fft_shape))
 
-    return _ifftn(has_smaller_axis, has_larger_axis, slices, fft_shape, u, v, axes)
+    return _ifftn(has_smaller_axis, has_larger_axis, slices, fft_shape,
+                  u, v, axes)
 
 
 def ifftn_pair(a, shape=None, axes=None, crop_fft=False):
@@ -963,22 +964,22 @@ def ifftn_pair(a, shape=None, axes=None, crop_fft=False):
 
     Parameters
     ----------
-        a : array-like or shape
-            An input array or its shape
-        shape : Optional[sequence of ints]
-            Number of FFT points. Default is input size along specified axes
-        axes : Optional[sequence of ints]
-            Axes along which to perform the fft. Default is all axes.
-        crop_fft : Optional[boolean]
-            Indicates that the fft function should crop its output to match
-            the shape of the input to the ifft function
+    a : array-like or shape
+        An input array or its shape
+    shape : Optional[sequence of ints]
+        Number of FFT points. Default is input size along specified axes
+    axes : Optional[sequence of ints]
+        Axes along which to perform the fft. Default is all axes.
+    crop_fft : Optional[boolean]
+        Indicates that the fft function should crop its output to match
+        the shape of the input to the ifft function
 
     Returns
     -------
-        planned_ifftn(x)
-            Planned fft function.
-        planned_fftn(x)
-            Planned ifft function. Returned if fft_pair is True.
+    planned_ifftn(x)
+        Planned fft function.
+    planned_fftn(x)
+        Planned ifft function.
     """
     a_shape, axes, u, v, fft_shape = \
         _fftn_preparations(a, shape, axes)
@@ -1023,17 +1024,17 @@ def irfftn(a, shape=None, axes=None):
 
     Parameters
     ----------
-        a : array-like or shape
-            An input array or its shape.
-        shape : Optional[sequence of ints]
-            Number of FFT points. Default is input size along specified axes
-        axes : Optional[sequence of ints]
-            Axes along which to perform the fft. Default is all axes.
+    a : array-like or shape
+        An input array or its shape.
+    shape : Optional[sequence of ints]
+        Number of FFT points. Default is input size along specified axes
+    axes : Optional[sequence of ints]
+        Axes along which to perform the fft. Default is all axes.
 
     Returns
     -------
-        planned_irfftn(x)
-            Planned ifft function.
+    planned_irfftn(x)
+        Planned ifft function.
     """
     a_shape, v_shape, axes, slices, u, v = _irfftn_preparations(a, shape, axes)
     has_smaller_axis = any(s1 < s2 for s1, s2 in zip(a_shape, v_shape))
@@ -1047,19 +1048,19 @@ def irfftn_pair(a, shape=None, axes=None):
 
     Parameters
     ----------
-        a : array-like or shape
-            An input array or its shape.
-        shape : Optional[sequence of ints]
-            Number of FFT points. Default is input size along specified axes
-        axes : Optional[sequence of ints]
-            Axes along which to perform the fft. Default is all axes.
+    a : array-like or shape
+        An input array or its shape.
+    shape : Optional[sequence of ints]
+        Number of FFT points. Default is input size along specified axes
+    axes : Optional[sequence of ints]
+        Axes along which to perform the fft. Default is all axes.
 
     Returns
     -------
-        planned_irfftn(x)
-            Planned ifft function.
-        planned_rfftn(x)
-            Planned fft function. Returned if fft_pair is True.
+    planned_irfftn(x)
+        Planned ifft function.
+    planned_rfftn(x)
+        Planned fft function.
     """
     a_shape, v_shape, axes, slices, u, v = _irfftn_preparations(a, shape, axes)
     has_smaller_axis = any(s1 < s2 for s1, s2 in zip(a_shape, v_shape))

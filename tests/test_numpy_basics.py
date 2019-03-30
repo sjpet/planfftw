@@ -2,7 +2,8 @@
 import numpy as np
 
 from planfftw._numpy_basics import (
-    fft, rfft, fftn, rfftn, ifft, irfft, ifftn, irfftn)
+    fft, fft_pair, rfft, rfft_pair, fftn, fftn_pair, rfftn, rfftn_pair,
+    ifft, ifft_pair, irfft, irfft_pair, ifftn, ifftn_pair, irfftn, irfftn_pair)
 # noinspection PyProtectedMember
 from planfftw._utils import pad_array
 
@@ -50,12 +51,12 @@ class TestFFT:
         assert_array_almost_equal(my_fft(self.x2), np.fft.fft(self.x2, n=32))
 
     def test_fft_pair(self):
-        my_fft, my_ifft = fft(self.x, nfft=32, fft_pair=True)
+        my_fft, my_ifft = fft_pair(self.x, nfft=32)
         x_fft = my_fft(self.x)
         assert_array_almost_equal(my_ifft(x_fft), pad_array(self.x, (32,)))
 
     def test_fft_pair_cropped(self):
-        my_fft, my_ifft = fft(self.x, nfft=32, fft_pair=True, crop_ifft=True)
+        my_fft, my_ifft = fft_pair(self.x, nfft=32, crop_ifft=True)
         x_fft = my_fft(self.x)
         assert_array_almost_equal(my_ifft(x_fft), self.x)
 
@@ -98,12 +99,12 @@ class TestRFFT:
         assert_array_almost_equal(my_rfft(self.x2), np.fft.rfft(self.x2, n=32))
 
     def test_fft_pair(self):
-        my_rfft, my_irfft = rfft(self.x, nfft=32, fft_pair=True)
+        my_rfft, my_irfft = rfft_pair(self.x, nfft=32)
         x_fft = my_rfft(self.x)
         assert_array_almost_equal(my_irfft(x_fft), pad_array(self.x, (32,)))
 
     def test_fft_pair_cropped(self):
-        my_rfft, my_irfft = fft(self.x, nfft=32, fft_pair=True, crop_ifft=True)
+        my_rfft, my_irfft = rfft_pair(self.x, nfft=32, crop_ifft=True)
         x_fft = my_rfft(self.x)
         assert_array_almost_equal(my_irfft(x_fft), self.x)
 
@@ -187,10 +188,9 @@ class TestFFTN:
     def test_fftn_pair(self):
         test_axes = (0, -1)
         test_shape = (4, 16)
-        my_fftn, my_ifftn = fftn(self.x3,
-                                 shape=test_shape,
-                                 axes=test_axes,
-                                 fft_pair=True)
+        my_fftn, my_ifftn = fftn_pair(self.x3,
+                                      shape=test_shape,
+                                      axes=test_axes)
         x_fft = my_fftn(self.x3)
         assert_array_almost_equal(my_ifftn(x_fft),
                                   pad_array(self.x3, (4, 3, 16)))
@@ -198,11 +198,10 @@ class TestFFTN:
     def test_fftn_pair_cropped(self):
         test_axes = (0, -1)
         test_shape = (4, 16)
-        my_fftn, my_ifftn = fftn(self.x3,
-                                 shape=test_shape,
-                                 axes=test_axes,
-                                 fft_pair=True,
-                                 crop_ifft=True)
+        my_fftn, my_ifftn = fftn_pair(self.x3,
+                                      shape=test_shape,
+                                      axes=test_axes,
+                                      crop_ifft=True)
         x_fft = my_fftn(self.x3)
         assert_array_almost_equal(my_ifftn(x_fft), self.x3)
 
@@ -286,10 +285,9 @@ class TestRFFTN:
     def test_rfftn_pair(self):
         test_axes = (0, -1)
         test_shape = (4, 16)
-        my_rfftn, my_irfftn = rfftn(self.x3,
-                                    shape=test_shape,
-                                    axes=test_axes,
-                                    fft_pair=True)
+        my_rfftn, my_irfftn = rfftn_pair(self.x3,
+                                         shape=test_shape,
+                                         axes=test_axes)
         x_fft = my_rfftn(self.x3)
         assert_array_almost_equal(my_irfftn(x_fft),
                                   pad_array(self.x3, (4, 3, 16)))
@@ -297,11 +295,10 @@ class TestRFFTN:
     def test_rfftn_pair_cropped(self):
         test_axes = (0, -1)
         test_shape = (4, 16)
-        my_rfftn, my_irfftn = rfftn(self.x3,
-                                    shape=test_shape,
-                                    axes=test_axes,
-                                    fft_pair=True,
-                                    crop_ifft=True)
+        my_rfftn, my_irfftn = rfftn_pair(self.x3,
+                                         shape=test_shape,
+                                         axes=test_axes,
+                                         crop_ifft=True)
         x_fft = my_rfftn(self.x3)
         assert_array_almost_equal(my_irfftn(x_fft), self.x3)
 
@@ -352,15 +349,14 @@ class TestIFFT:
                                   np.fft.ifft(self.x_fft_2, n=16))
 
     def test_ifft_pair(self):
-        my_ifft, my_fft = ifft(self.x_fft, fft_pair=True)
+        my_ifft, my_fft = ifft_pair(self.x_fft)
         my_x = my_ifft(self.x_fft)
         assert_array_almost_equal(my_fft(my_x), self.x_fft)
 
     def test_ifft_pair_cropped(self):
-        my_ifft, my_fft = ifft(self.x_fft,
-                               nfft=32,
-                               fft_pair=True,
-                               crop_fft=True)
+        my_ifft, my_fft = ifft_pair(self.x_fft,
+                                    nfft=32,
+                                    crop_fft=True)
         my_x = my_ifft(self.x_fft)
         assert_array_almost_equal(my_fft(my_x), self.x_fft)
 
@@ -412,7 +408,7 @@ class TestIRFFT:
                                   np.fft.irfft(self.x_fft_2, n=16))
 
     def test_irfft_pair(self):
-        my_irfft, my_rfft = irfft(self.x_fft, fft_pair=True)
+        my_irfft, my_rfft = irfft_pair(self.x_fft)
         my_x = my_irfft(self.x_fft)
         assert_array_almost_equal(my_rfft(my_x), self.x_fft)
 
@@ -607,20 +603,16 @@ class TestIFFTN:
                                   np.fft.ifftn(self.x3_fft, axes=test_axes))
 
     def test_ifftn_pair(self):
-        my_ifftn, my_fftn = ifftn(self.x3_fft,
-                                  fft_pair=True)
+        my_ifftn, my_fftn = ifftn_pair(self.x3_fft)
         my_x = my_ifftn(self.x3_fft)
-        assert_array_almost_equal(my_fftn(my_x),
-                                  self.x3_fft)
+        assert_array_almost_equal(my_fftn(my_x), self.x3_fft)
 
     def test_ifftn_pair_cropped(self):
-        my_ifftn, my_fftn = ifftn(self.x3_fft,
-                                  shape=(8, 4, 32),
-                                  fft_pair=True,
-                                  crop_fft=True)
+        my_ifftn, my_fftn = ifftn_pair(self.x3_fft,
+                                       shape=(8, 4, 32),
+                                       crop_fft=True)
         my_x = my_ifftn(self.x3_fft)
-        assert_array_almost_equal(my_fftn(my_x),
-                                  self.x3_fft)
+        assert_array_almost_equal(my_fftn(my_x), self.x3_fft)
 
 
 class TestIRFFTN:
@@ -753,8 +745,6 @@ class TestIRFFTN:
                                   np.fft.irfftn(self.x3_fft, axes=test_axes))
 
     def test_irfftn_pair(self):
-        my_irfftn, my_rfftn = irfftn(self.x3_fft,
-                                     fft_pair=True)
+        my_irfftn, my_rfftn = irfftn_pair(self.x3_fft)
         my_x = my_irfftn(self.x3_fft)
-        assert_array_almost_equal(my_rfftn(my_x),
-                                  self.x3_fft)
+        assert_array_almost_equal(my_rfftn(my_x), self.x3_fft)

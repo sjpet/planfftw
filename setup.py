@@ -8,7 +8,7 @@ from os.path import splitext, basename
 with open("README.md") as fh:
     long_description = fh.read()
 
-__version__ = "0.3.0"
+__version__ = "1.0"
 
 
 setup(name="planfftw",
@@ -25,13 +25,11 @@ setup(name="planfftw",
       include_package_data=True,
       download_url="https://github.com/sjpet/planfftw/tarball/%s" % __version__,
       classifiers=[
-          'Development Status :: 4 - Beta',
+          'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Science/Research',
           'Intended Audience :: Developers',
-          'License :: OSI Approved :: GNU General Public Lic    ense (GPL)',
-          'Programming Language :: Python :: 2.7',
+          'License :: OSI Approved :: GNU General Public License (GPL)',
           'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
           'Programming Language :: Python :: 3.7',
