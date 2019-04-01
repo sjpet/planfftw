@@ -36,7 +36,8 @@ setup(name="planfftw",
           'Topic :: Utilities'],
       install_requires=["numpy"],
       extras_require={"speed": ["pyfftw"],
-                      "dev": ["pytest", "tox", "scipy", "pyfftw"]},
+                      "dev": ["pytest", "tox", "scipy", "pyfftw"],
+                      "docs": ["sphinx", "numpydoc"]},
       tests_require=["pytest"],
       keywords=["pyfftw", "fft", "fftw", "plan", "planner"])
 
