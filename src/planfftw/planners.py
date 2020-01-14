@@ -404,7 +404,6 @@ def firfilter_const_signal(plan_b, x, axis=-1):
      signal_transform_function) = firfilter2(plan_b, x, axis=axis)
 
     x_ = signal_transform_function(x)
-    print(x_)
 
     def planned_firfilter(b):
         return filter_function(filter_transform_function(b), x_)

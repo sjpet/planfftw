@@ -8,7 +8,7 @@ from os.path import splitext, basename
 with open("README.md") as fh:
     long_description = fh.read()
 
-__version__ = "1.1"
+__version__ = "1.2.0"
 
 
 setup(name="planfftw",
