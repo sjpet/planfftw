@@ -273,20 +273,24 @@ def firfilter2(filter_coefficients, signal, axis=-1):
             raise ValueError("Invalid signal shape {}, function expects {}"
                              .format(x.shape, signal_shape))
         slices = [slice(None)] * n_dim
+        segments = []
         for k in range(0, signal_length, segment_length):
             k_to = np.min((k + segment_length, signal_length))
             slices_ = tuple(_utils.replace(slices, axis, slice(k, k_to)))
-            yield rfft_function(_utils.pad_array(x[slices_],
-                                                 padded_signal_shape))
+            segments.append(rfft_function(_utils.pad_array(x[slices_],
+                                                          padded_signal_shape)))
+
+        return segments
 
     def filter_function(transformed_filter, transformed_segments):
         y = np.zeros(signal_shape)
+        segment_iterator = iter(transformed_segments)
         slices = [slice(None)]*n_dim
         for k in range(0, signal_length, segment_length):
             y_ = irfft_function(np.apply_along_axis(
                 lambda x: x*transformed_filter,
                 axis,
-                next(transformed_segments)))
+                next(segment_iterator)))
             y_to = np.min((signal_length, k + fft_size))
             out_slices = tuple(_utils.replace(slices, axis, slice(k, y_to)))
             part_slices = \
@@ -400,6 +404,7 @@ def firfilter_const_signal(plan_b, x, axis=-1):
      signal_transform_function) = firfilter2(plan_b, x, axis=axis)
 
     x_ = signal_transform_function(x)
+    print(x_)
 
     def planned_firfilter(b):
         return filter_function(filter_transform_function(b), x_)

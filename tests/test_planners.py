@@ -104,6 +104,7 @@ class TestFirFilter:
     def test_firfilter_2d_input_default_axis(self):
         my_firfilter = firfilter(self.b, self.x2)
         assert_array_almost_equal(my_firfilter(self.b, self.x2), self.x2fb)
+        assert_array_almost_equal(my_firfilter(self.b, self.x2), self.x2fb)
 
     def test_firfilter_2d_input_alternative_axis(self):
         my_firfilter = firfilter(self.b, self.x2.T, axis=0)
@@ -112,9 +113,11 @@ class TestFirFilter:
     def test_firfilter_2d_input_x_constant(self):
         my_firfilter = firfilter_const_signal(self.b, self.x2)
         assert_array_almost_equal(my_firfilter(self.b), self.x2fb)
+        assert_array_almost_equal(my_firfilter(self.b), self.x2fb)
 
     def test_firfilter_2d_input_b_constant(self):
         my_firfilter = firfilter_const_filter(self.b, self.x2)
+        assert_array_almost_equal(my_firfilter(self.x2), self.x2fb)
         assert_array_almost_equal(my_firfilter(self.x2), self.x2fb)
 
     def test_firfilter_3d_input_alternative_axis(self):

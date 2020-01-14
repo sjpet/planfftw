@@ -8,7 +8,7 @@ from os.path import splitext, basename
 with open("README.md") as fh:
     long_description = fh.read()
 
-__version__ = "1.0"
+__version__ = "1.1"
 
 
 setup(name="planfftw",
@@ -16,6 +16,7 @@ setup(name="planfftw",
       license="GPL-3.0",
       description="Julia-inspired function planners around pyfftw",
       long_description=long_description,
+      long_description_content_type="text/markdown",
       author="Stefan Peterson",
       author_email="stefan.peterson@rubico.com",
       url="https://github.com/sjpet/planfftw",
